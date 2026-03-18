@@ -1,0 +1,4 @@
+capacity_kw,property_type,heat_demand_kwh,electricity_use_kwh,cost_gbp
+5,1-2 bed (Small),7000,2200,7000
+10,3-4 bed (Medium),11500,3550,10000
+14.5,5+ bed (Large),19500,6050,13000

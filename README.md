@@ -1,0 +1,143 @@
+# Heat Pump Cost Analysis
+
+Analysis tool for optimizing the balance between heat pump and insulation investments.
+
+## Project Structure
+
+```
+heat-pump-cost/
+├── data/
+│   ├── heat-pump-ratings.csv      # Heat pump specifications and costs
+│   └── home-improvements.csv       # Insulation improvement options
+├── src/
+│   └── heat_pump_cost/
+│       ├── __init__.py
+│       ├── __main__.py             # Module entry point
+│       ├── cli.py                  # Command-line interface
+│       ├── cost_calculator.py      # CostCalculator class
+│       ├── plotter.py              # Plotting utilities
+│       └── plot_cost_analysis.py   # Main analysis script
+├── cost-balance.md                 # Project documentation
+└── pyproject.toml                  # Project configuration
+```
+
+## Installation
+
+```bash
+# Install the package in editable mode
+pip install -e .
+```
+
+## Usage
+
+### Run with default settings
+
+```bash
+# Using the installed console script
+heat-pump-cost
+
+# Or as a Python module
+python -m heat_pump_cost
+```
+
+### CLI Options
+
+```bash
+# Show help
+heat-pump-cost --help
+
+# Specify custom initial heat loss
+heat-pump-cost --initial-heat-loss 20000
+
+# Use custom data files
+heat-pump-cost \
+  --heat-pumps data/my-heat-pumps.csv \
+  --improvements data/my-improvements.csv
+
+# Specify output directory
+heat-pump-cost --output-dir results/
+
+# Custom electricity rate (20p/kWh)
+heat-pump-cost --electricity-rate 0.20
+```
+
+## Output
+
+The analysis generates 6 plots:
+
+### Capital Costs Only (Installation costs)
+1. `heat_pump_1_no_grant_capital_only.png` - No grant scenario
+2. `heat_pump_2_with_grant_capital_only.png` - With £7,500 grant
+3. `heat_pump_3_50year_capital_only.png` - 50-year lifecycle (2 heat pumps)
+
+### Total Lifecycle Costs (Capital + Runtime)
+4. `heat_pump_4_no_grant_with_runtime.png` - No grant + 25 years runtime
+5. `heat_pump_5_with_grant_with_runtime.png` - With £7,500 grant + 25 years runtime
+6. `heat_pump_6_50year_with_runtime.png` - 50-year lifecycle + runtime costs
+
+## Data Files
+
+### heat-pump-ratings.csv
+
+CSV file with heat pump specifications:
+- `capacity_kw`: Heat pump capacity in kW
+- `property_type`: Property size category
+- `heat_demand_kwh`: Typical annual heat demand in kWh
+- `electricity_use_kwh`: Estimated annual electricity consumption in kWh
+- `cost_gbp`: Installation cost in £
+
+### home-improvements.csv
+
+CSV file with insulation improvement options:
+- `description`: Name of the improvement
+- `cost_gbp`: Cost in £
+- `heat_reduction_kwh`: Annual heat loss reduction in kWh
+
+## Key Findings
+
+The analysis reveals:
+
+1. **Without runtime costs**: Optimal strategy is minimal insulation (loft only) reducing heat loss to 10,000 kWh/year.
+
+2. **With runtime costs over 50 years**: Optimal point shifts to 9,030 kWh/year, making additional insulation investment economically beneficial.
+
+3. **Runtime costs dominate**: Over a lifecycle, runtime costs represent 56-87% of total costs, fundamentally changing the optimization equation.
+
+4. **Government grant impact**: The £7,500 grant significantly reduces upfront costs but represents only ~40% of the second heat pump replacement cost over 50 years.
+
+## Development
+
+### Code Structure
+
+- **CostCalculator**: Core calculation engine that reads data from CSV files and computes optimal costs
+- **CostPlotter**: Plotting utilities for visualizing results
+- **CLI**: Command-line interface for running analyses with custom parameters
+
+### Extending the Analysis
+
+To add new scenarios:
+
+```python
+from cost_calculator import CostCalculator
+from plotter import CostPlotter
+
+calculator = CostCalculator(
+    initial_heat_loss=18000,
+    heat_pumps_csv="data/heat-pump-ratings.csv",
+    improvements_csv="data/home-improvements.csv"
+)
+
+result = calculator.calculate_total_cost(
+    num_heat_pumps=3,
+    heat_pump_grants=[7500, 5000, 0],
+    runtime_years=75,
+    electricity_rate=0.20
+)
+
+plotter = CostPlotter(result)
+plotter.save_plot("custom_analysis.png")
+```
+
+## License
+
+See project documentation for details.
