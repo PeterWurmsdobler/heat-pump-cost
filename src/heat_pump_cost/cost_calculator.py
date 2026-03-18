@@ -8,7 +8,20 @@ from scipy.optimize import curve_fit
 
 
 class CostCalculator:
-    """Calculate optimal costs for heat pump and insulation investments."""
+    """Calculate optimal costs for heat pump and insulation investments.
+    
+    Constants:
+        DESIGN_HEAT_LOSS_W: Design heat loss in Watts (21°C inside, 2°C outside)
+        ACTUAL_ANNUAL_KWH: Actual annual heating consumption in kWh/year
+        WATTS_TO_KWH_YEAR: Empirical conversion factor (≈2.778)
+        MIN_HEAT_LOSS_KWH: Minimum heat loss (hot water, ventilation, etc.)
+    """
+    
+    # Empirical conversion factor: 9000W design → 25000 kWh/year actual
+    DESIGN_HEAT_LOSS_W = 9000
+    ACTUAL_ANNUAL_KWH = 25000
+    WATTS_TO_KWH_YEAR = ACTUAL_ANNUAL_KWH / DESIGN_HEAT_LOSS_W  # ≈ 2.778
+    MIN_HEAT_LOSS_KWH = 1000  # Minimum heat loss (hot water, ventilation, etc.)
     
     def __init__(self, initial_heat_loss: float, 
                  heat_pumps_csv: str, 
@@ -40,20 +53,35 @@ class CostCalculator:
         return heat_pumps
     
     def _load_improvements(self, csv_path: str) -> List[Dict]:
-        """Load home improvement data from CSV file."""
+        """Load home improvement data from CSV file and sort by cost-effectiveness.
+        
+        Reads heat loss reduction in Watts (at design conditions: 21°C inside, 2°C outside),
+        converts to kWh/year using empirically-derived factor, and sorts by heat reduction per pound.
+        """
         improvements = []
+        
         with open(csv_path, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
+                # Convert Watts to kWh/year using empirical factor
+                heat_reduction_w = float(row['heat_loss_reduction_watt'])
+                heat_reduction_kwh_year = heat_reduction_w * self.WATTS_TO_KWH_YEAR
+                
                 improvements.append({
                     'description': row['description'],
                     'cost_gbp': float(row['cost_gbp']),
-                    'heat_reduction_kwh': float(row['heat_reduction_kwh'])
+                    'heat_reduction_kwh': heat_reduction_kwh_year,
+                    'cost_effectiveness': heat_reduction_w / float(row['cost_gbp'])
                 })
+        
+        # Sort by cost-effectiveness (W per £) in descending order
+        improvements.sort(key=lambda x: x['cost_effectiveness'], reverse=True)
         return improvements
     
     def calculate_insulation_costs(self) -> Tuple[List[float], List[float]]:
         """Calculate accumulated insulation costs and remaining heat loss.
+        
+        Ensures heat loss doesn't go below 1000 kWh/year (minimum for hot water).
         
         Returns:
             Tuple of (heat_loss_values, insulation_cost_values)
@@ -67,8 +95,17 @@ class CostCalculator:
         for improvement in self.improvements:
             cumulative_cost += improvement['cost_gbp']
             cumulative_reduction += improvement['heat_reduction_kwh']
+            
+            # Ensure we don't reduce heat loss below minimum
+            remaining_heat_loss = max(self.MIN_HEAT_LOSS_KWH, 
+                                     self.initial_heat_loss - cumulative_reduction)
+            
+            # Stop if we've already reached minimum heat loss
+            if heat_loss[-1] <= self.MIN_HEAT_LOSS_KWH:
+                break
+                
             insulation_cost.append(cumulative_cost)
-            heat_loss.append(self.initial_heat_loss - cumulative_reduction)
+            heat_loss.append(remaining_heat_loss)
         
         return heat_loss, insulation_cost
     

@@ -122,7 +122,7 @@ from cost_calculator import CostCalculator
 from plotter import CostPlotter
 
 calculator = CostCalculator(
-    initial_heat_loss=18000,
+    initial_heat_loss=25000,
     heat_pumps_csv="data/heat-pump-ratings.csv",
     improvements_csv="data/home-improvements.csv"
 )

@@ -13,7 +13,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Run with default settings (18,000 kWh initial heat loss)
+  # Run with default settings (25,000 kWh initial heat loss, 15p/kWh electricity)
   heat-pump-cost
 
   # Specify custom initial heat loss
@@ -33,8 +33,8 @@ Examples:
     parser.add_argument(
         '--initial-heat-loss',
         type=float,
-        default=18000,
-        help='Initial annual heat loss in kWh (default: 18000)'
+        default=25000,
+        help='Initial annual heat loss in kWh (default: 25000)'
     )
     
     parser.add_argument(

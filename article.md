@@ -13,7 +13,7 @@ We consider a 1930s semi-detached house, approximately 80m², in its original sh
 - Basic double glazing
 - No loft insulation
 
-The estimated heat loss over an entire year in Cambridge is approximately **18,000 kWh**. We analyze various improvement strategies including loft insulation, floor insulation, wall rendering, external wall insulation, and triple glazing.
+The estimated heat loss over an entire year for our house was estimated to be approximately **25,000 kWh** without any insulation (at the time of purchase). The estimated heat loss at standard conditions (21°C inside, 2°C outside) was also estimated to be **9,000 W**. This gives us an empirical conversion factor of approximately **2.78** for converting design heat loss (in Watts) to annual heating energy (in kWh/year), accounting for actual weather patterns and heating usage throughout the year.
 
 ### Heat Pump Options
 
@@ -27,15 +27,19 @@ The analysis considers three heat pump sizes suitable for different property typ
 
 ### Home Improvement Options
 
-The following insulation improvements are considered, with their associated costs and heat reduction benefits:
+The following insulation improvements are considered, sorted by cost-effectiveness (Watts of heat reduction per pound spent). The heat loss reductions are given at design conditions (21°C inside, 2°C outside) and converted to annual energy savings using the empirical factor:
 
-| Improvement | Cost (£) | Heat Reduction (kWh/year) |
-|-------------|----------|---------------------------|
-| Loft insulation | £500 | 8,000 |
-| Double layer ground floor | £1,000 | 500 |
-| Render replacement front elevation | £1,500 | 500 |
-| External wall insulation | £8,000 | 2,000 |
-| New triple glazing | £10,000 | 1,000 |
+| Improvement | Cost (£) | Heat Loss Reduction (W) | Annual Energy Saving (kWh/year) | Cost-Effectiveness (W/£) |
+|-------------|----------|------------------------|--------------------------------|------------------------|
+| Loft insulation | £250 | 4,000 | 11,111 | 16.0 |
+| Rockwool internal bay window | £100 | 200 | 556 | 2.0 |
+| Double glazing entrance | £300 | 100 | 278 | 0.33 |
+| Second layer ground floor | £1,000 | 200 | 556 | 0.20 |
+| Insulating render front | £1,000 | 200 | 556 | 0.20 |
+| External wall insulation | £12,000 | 2,000 | 5,556 | 0.17 |
+| Triple glazing | £10,000 | 1,000 | 2,778 | 0.10 |
+
+Improvements are applied in order of cost-effectiveness, ensuring the most efficient measures are implemented first. The total cost is cummulative.
 
 ### Analysis Scenarios
 
@@ -55,21 +59,21 @@ When considering only the upfront capital costs of installation, the analysis re
 
 ![Capital costs without grant](assets/heat_pump_1_no_grant_capital_only.png)
 
-Without any government support, the optimal approach requires a total capital investment of **£9,253**. This consists of:
-- **£500** for loft insulation (reducing heat loss from 18,000 to 10,000 kWh/year)
-- **£8,753** for a single heat pump installation
+Without any government support, the optimal approach requires a total capital investment of **£10,662**. This consists of:
+- **£350** for insulation (loft insulation + rockwool bay window, reducing heat loss from 25,000 to 13,333 kWh/year)
+- **£10,312** for a single heat pump installation
 
-The analysis shows that minimal insulation investment (loft only) combined with a moderately-sized heat pump represents the most cost-effective solution when considering capital costs alone.
+The analysis shows that implementing the two most cost-effective improvements combined with a moderately-sized heat pump represents the most cost-effective solution when considering capital costs alone.
 
 ### Scenario 2: With £7,500 Government Grant
 
 ![Capital costs with grant](assets/heat_pump_2_with_grant_capital_only.png)
 
-The UK's Boiler Upgrade Scheme provides a £7,500 grant towards heat pump installation. With this support, the total capital cost reduces to **£1,753**:
-- **£500** for loft insulation
-- **£1,253** for heat pump (after £7,500 grant deduction)
+The UK's Boiler Upgrade Scheme provides a £7,500 grant towards heat pump installation. With this support, the total capital cost reduces to **£3,162**:
+- **£350** for insulation
+- **£2,812** for heat pump (after £7,500 grant deduction)
 
-Importantly, the optimal heat loss target remains unchanged at 10,000 kWh/year. The grant provides substantial financial relief but does not alter the optimal balance between insulation and heat pump capacity.
+Importantly, the optimal heat loss target remains unchanged at 13,333 kWh/year. The grant provides substantial financial relief but does not alter the optimal balance between insulation and heat pump capacity.
 
 ### Scenario 3: 50-Year Lifecycle (Two Heat Pumps)
 
@@ -79,15 +83,15 @@ Over a 50-year period, heat pumps typically need replacement after 20-25 years. 
 - First heat pump with £7,500 grant
 - Second heat pump at full cost (no grant)
 
-Total 50-year capital expenditure: **£10,505**
-- **£500** for insulation (one-time investment lasting 50 years)
-- **£10,005** for two heat pumps (net of one £7,500 grant)
+Total 50-year capital expenditure: **£13,474**
+- **£350** for insulation (one-time investment lasting 50 years)
+- **£13,124** for two heat pumps (net of one £7,500 grant)
 
 Even with the grant on the first unit, the 50-year capital cost exceeds the no-grant single-pump scenario, highlighting the importance of heat pump longevity and replacement costs.
 
 ### Key Insight: Capital Costs Only
 
-When considering capital costs alone, the optimal strategy in all three scenarios is identical: invest £500 in loft insulation to reduce heat loss to 10,000 kWh/year. The government grant provides significant immediate cost relief (£7,500 savings), but this benefit is partially offset by the second heat pump replacement cost over a 50-year timeframe.
+When considering capital costs alone, the optimal strategy in all three scenarios is identical: invest £350 in the two most cost-effective improvements (loft insulation and bay window insulation) to reduce heat loss to 13,333 kWh/year. The government grant provides significant immediate cost relief (£7,500 savings), but this benefit is partially offset by the second heat pump replacement cost over a 50-year timeframe.
 
 ## Capital and Operational Expenditure
 
@@ -99,11 +103,11 @@ The analysis changes dramatically when operational costs—specifically electric
 
 Including 25 years of electricity costs at £0.15/kWh transforms the cost picture:
 
-**Total lifecycle cost: £20,917**
-- Capital costs: £9,500
-- Runtime costs: **£11,665** (55.8% of total)
+**Total lifecycle cost: £26,059**
+- Capital costs: £11,453
+- Runtime costs: **£15,021** (57.7% of total)
 
-The runtime costs exceed the initial capital investment, demonstrating that operational expenses dominate long-term costs. Annual electricity consumption at the optimal point is approximately 3,111 kWh, costing £467 per year.
+The runtime costs now exceed the initial capital investment, demonstrating that operational expenses dominate long-term costs. The optimal heat loss shifts slightly to 12,901 kWh/year (requiring £928 in insulation). Annual electricity consumption at this optimal point is 4,006 kWh, costing £601 per year.
 
 ### Scenario 2: With Grant + 25 Years Runtime
 
@@ -111,11 +115,11 @@ The runtime costs exceed the initial capital investment, demonstrating that oper
 
 With the £7,500 grant and 25 years of operation:
 
-**Total lifecycle cost: £13,417**
-- Capital costs: £2,000
-- Runtime costs: **£11,665** (86.9% of total)
+**Total lifecycle cost: £18,559**
+- Capital costs: £3,953
+- Runtime costs: **£15,021** (80.9% of total)
 
-The grant dramatically reduces capital costs, but runtime costs remain unchanged. Runtime expenses now constitute an overwhelming 87% of total lifecycle costs, emphasizing that the grant primarily addresses the upfront barrier rather than long-term economics.
+The grant dramatically reduces capital costs, but runtime costs remain unchanged. Runtime expenses now constitute an overwhelming 81% of total lifecycle costs, emphasizing that the grant primarily addresses the upfront barrier rather than long-term economics.
 
 ### Scenario 3: 50-Year Lifecycle + Runtime
 
@@ -123,29 +127,20 @@ The grant dramatically reduces capital costs, but runtime costs remain unchanged
 
 The 50-year analysis with operational costs reveals a crucial finding:
 
-**Total lifecycle cost: £33,093**
-- Capital costs: £12,116
-- Runtime costs: **£21,086** (63.7% of total)
+**Total lifecycle cost: £36,284**
+- Capital costs: £21,083
+- Runtime costs: **£15,201** (41.9% of total)
 
-**Critical Discovery**: The optimal heat loss target shifts from 10,000 kWh/year to **9,030 kWh/year**. This means investing approximately **£2,909 in insulation** (instead of just £500) becomes economically justified.
+**Critical Discovery**: The optimal heat loss target shifts dramatically from 13,333 kWh/year to **6,420 kWh/year**. This means investing approximately **£14,583 in insulation** becomes economically justified—a massive increase from the £350 optimal for capital-only scenarios.
 
-Why? Over 50 years, the cumulative electricity savings from better insulation (reducing annual consumption from 3,111 kWh to 2,811 kWh) outweigh the higher upfront insulation costs. The additional £2,400 insulation investment saves approximately 300 kWh annually × 50 years × £0.15/kWh = £2,250 in electricity, nearly paying for itself.
-
-### Key Insight: Total Lifecycle Costs
-
-Runtime costs represent 56-87% of total lifecycle costs, fundamentally changing the optimization equation:
-
-- **Short-term (no runtime): "Heat Pump First"** - Minimal insulation combined with a heat pump is most cost-effective
-- **Long-term (50-year lifecycle): "Fabric First" becomes viable** - Increased insulation investment pays off through reduced operational costs
-
-The analysis demonstrates that the "fabric first vs heat pump first" debate has no single answer—it depends critically on the time horizon considered.
+Why? Over 50 years, the cumulative electricity savings from comprehensive insulation (reducing annual consumption from 4,006 kWh to 2,006 kWh) outweigh the higher upfront insulation costs. The additional £14,233 insulation investment saves approximately 2,000 kWh annually × 50 years × £0.15/kWh = £15,000 in electricity, more than paying for itself.
 
 ## Conclusion
 
-The "fabric first vs heat pump first" debate has no single answer—it depends critically on time horizon. When focusing solely on capital costs, minimal insulation (£500 loft insulation) combined with a heat pump is optimal. However, when operational costs are considered, the picture transforms: over 50 years, runtime costs dominate (63% of total), making increased insulation investment economically justified—optimal insulation spending increases six-fold from £500 to £2,909.
+The "fabric first vs heat pump first" debate has no single answer—it depends critically on time horizon and whether operational costs are included. Runtime costs represent 42-81% of total lifecycle costs, fundamentally changing the optimization equation. When focusing solely on capital costs, minimal insulation (£350) combined with a heat pump is optimal. However, when operational costs are considered over 50 years, optimal insulation spending increases **42-fold** to £14,583, reducing heat loss from 13,333 to 6,420 kWh/year—"Fabric First" becomes economically dominant for long-term ownership.
 
-For a 1930s semi-detached home, the sweet spot for long-term ownership (20+ years) is approximately £3,000 in insulation combined with a right-sized heat pump. Current policy, while effectively addressing upfront cost barriers through £7,500 heat pump grants, may inadvertently discourage optimal long-term investment in building fabric. A more balanced approach—split incentives covering both insulation and heat pumps, lifecycle cost education, and tiered grants for comprehensive improvements—would better align short-term decisions with long-term economic and environmental objectives.
+Current policy, while effectively addressing upfront cost barriers through £7,500 heat pump grants, may inadvertently discourage optimal long-term investment in building fabric. A more balanced approach—split incentives covering both insulation and heat pumps, lifecycle cost education, and tiered grants for comprehensive improvements—would better align short-term decisions with long-term economic and environmental objectives.
 
 ---
 
-*Analysis based on: 1930s semi-detached house (80m²), Cambridge climate, 18,000 kWh initial heat loss, £0.15/kWh electricity rate, £7,500 government grant (UK Boiler Upgrade Scheme)*
+*Analysis based on: 1930s semi-detached house (80m²), Cambridge climate, 25,000 kWh/year initial heat loss (9,000 W design heat loss), £0.15/kWh electricity rate, £7,500 government grant (UK Boiler Upgrade Scheme). Home improvements sorted by cost-effectiveness (W/£).*

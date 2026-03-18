@@ -1,6 +1,8 @@
-description,cost_gbp,heat_reduction_kwh
-loft insulation,500,8000
-double layer ground floor,1000,500
-render replacement front elevation,1500,500
-external wall insulation,8000,2000
-new triple glazing,10000,1000
+description,cost_gbp,heat_loss_reduction_watt
+loft insulation,250,4000
+double glazing entrance, 300, 100
+rockwool internal bay window, 100, 200
+second layer ground floor,1000,200
+insulating render front,1000,200
+external wall insulation,12000,2000
+triple glazing,10000,1000
