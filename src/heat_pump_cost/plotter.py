@@ -127,7 +127,7 @@ class CostPlotter:
             for i, prop_type in enumerate(hp_arrays['property_types']):
                 ax.annotate(f"{prop_type}\n{hp_arrays['capacity'][i]:.1f} kW", 
                            xy=(hp_arrays['demand'][i], hp_cost_with_runtime[i]),
-                           xytext=(5, 5), textcoords='offset points',
+                           xytext=(10, -15), textcoords='offset points',
                            fontsize=8, alpha=0.7, color='darkred')
         
         # Labels and title

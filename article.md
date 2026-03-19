@@ -30,7 +30,7 @@ The following insulation improvements have partially been carried out, or for th
 
 | Improvement | Cost (£) | Heat Loss Reduction (W) | Annual Energy Saving (kWh/year) | Cost-Effectiveness (W/£) |
 |-------------|----------|------------------------|--------------------------------|------------------------|
-| Loft insulation | £250 | 4,000 | 11,111 | 16.0 |
+| Loft & eves insulation | £250 | 4,000 | 11,111 | 16.0 |
 | Rockwool internal bay window | £100 | 200 | 556 | 2.0 |
 | Double glazing entrance | £300 | 100 | 278 | 0.33 |
 | Second layer ground floor | £1,000 | 200 | 556 | 0.20 |
