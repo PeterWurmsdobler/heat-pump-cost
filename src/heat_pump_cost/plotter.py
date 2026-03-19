@@ -109,18 +109,34 @@ class CostPlotter:
         # Add annotation for optimal point
         ax.annotate(f'Optimal Point\n{min_heat_loss:.0f} kWh\n£{min_total_cost:.0f}',
                     xy=(min_heat_loss, min_total_cost),
-                    xytext=(min_heat_loss + 2000, min_total_cost + 2000),
+                    xytext=(0, 80), textcoords='offset points',
                     arrowprops=dict(arrowstyle='->', color='green', lw=2),
                     fontsize=11, fontweight='bold',
                     bbox=dict(boxstyle='round,pad=0.5', facecolor='yellow', alpha=0.7))
         
-        # Annotate home improvements
+        # Annotate home improvements with varied positioning for better readability
+        # Define offset patterns that follow the curve progression with minimal y offset
+        offset_patterns = [
+            (120, 10),   # First improvement (loft) - right, minimal up
+            (120, 20),   # Second (bay window) - right, slightly up
+            (120, 30),   # Third (entrance glazing) - right, a bit more up
+            (120, 40),   # Fourth (ground floor) - right, continuing up
+            (120, 50),   # Fifth (render) - right, slightly higher
+            (30, 5),     # Sixth (external wall) - small x offset, minimal up
+            (30, 5),     # Seventh (triple glazing) - small x offset, minimal up
+        ]
+        
         for i, name in enumerate(improvement_names):
             if i > 0:  # Skip "Start" as it's at the starting point
+                # Use cycling offset pattern
+                offset_idx = (i - 1) % len(offset_patterns)
+                offset = offset_patterns[offset_idx]
+                
                 ax.annotate(name.title(), 
                            xy=(heat_loss[i], insulation_cost[i]),
-                           xytext=(5, 5), textcoords='offset points',
-                           fontsize=8, alpha=0.7)
+                           xytext=offset, textcoords='offset points',
+                           fontsize=8, alpha=0.7,
+                           arrowprops=dict(arrowstyle='->', lw=0.5, alpha=0.5, color='blue'))
         
         # Annotate heat pumps
         if 'property_types' in hp_arrays:
