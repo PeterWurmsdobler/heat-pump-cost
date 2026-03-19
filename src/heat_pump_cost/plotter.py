@@ -150,23 +150,27 @@ class CostPlotter:
         ax.set_xlabel('Heat Loss / Heat Demand (kWh/year)', fontsize=12, fontweight='bold')
         ax.set_ylabel('Cost (£)', fontsize=12, fontweight='bold')
         
-        title_base = 'Heat Pump vs Insulation Cost Optimization\n' + \
-                     'Finding the Optimal Balance for a 1930s Semi-Detached House'
         if title_suffix:
-            title_base += f'\n{title_suffix}'
+            # Use custom title if provided
+            title_text = title_suffix
+        else:
+            # Use default title
+            title_text = 'Heat Pump vs Insulation Cost Optimization\n' + \
+                        'Finding the Optimal Balance for a 1930s Semi-Detached House'
         
-        ax.set_title(title_base, fontsize=14, fontweight='bold')
+        ax.set_title(title_text, fontsize=14, fontweight='bold')
         ax.legend(fontsize=10, loc='best')
         ax.grid(True, alpha=0.3)
         
         return fig
     
-    def save_plot(self, filename: str, dpi: int = 300):
+    def save_plot(self, filename: str, dpi: int = 300, title: str = ""):
         """Save the plot to a file.
         
         Args:
             filename: Output filename (can include path)
             dpi: Resolution in dots per inch
+            title: Custom title for the plot
         """
         from pathlib import Path
         
@@ -174,7 +178,7 @@ class CostPlotter:
         output_path = Path(filename)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
-        fig = self.create_plot()
+        fig = self.create_plot(title_suffix=title)
         fig.tight_layout()
         fig.savefig(str(output_path), dpi=dpi, bbox_inches='tight')
         plt.close(fig)

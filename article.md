@@ -53,7 +53,7 @@ When considering only the upfront capital costs of installation, the analysis re
 
 ### Scenario 1: No Government Grant
 
-![Capital costs without grant](assets/heat_pump_1_no_grant_capital_only.png)
+![Capital costs without government grant](assets/heat_pump_1_no_grant_capital_only.png)
 
 Without any government support, the optimal approach requires a total capital investment of **£13,223**. This consists of:
 - **£350** for insulation (loft insulation + rockwool bay window, reducing heat loss from 25,000 to 13,333 kWh/year)
@@ -63,7 +63,7 @@ The analysis shows that implementing the two most cost-effective improvements co
 
 ### Scenario 2: With £7,500 Government Grant
 
-![Capital costs with grant](assets/heat_pump_2_with_grant_capital_only.png)
+![Capital costs with government grant](assets/heat_pump_2_with_grant_capital_only.png)
 
 The UK's Boiler Upgrade Scheme provides a £7,500 grant towards heat pump installation. With this support, the total capital cost reduces to **£5,723**:
 - **£350** for insulation
@@ -81,7 +81,7 @@ The analysis changes dramatically when operational costs—specifically electric
 
 ### Scenario 1: No Government Grant
 
-![Total costs without grant](assets/heat_pump_4_no_grant_with_runtime.png)
+![Total costs without government grant](assets/heat_pump_4_no_grant_with_runtime.png)
 
 Including 25 years of electricity costs at £0.15/kWh transforms the cost picture:
 
@@ -93,7 +93,7 @@ The runtime costs now approach the capital investment, demonstrating that operat
 
 ### Scenario 2: With £7,500 Government Grant
 
-![Total costs with grant](assets/heat_pump_5_with_grant_with_runtime.png)
+![Total costs with government grant](assets/heat_pump_5_with_grant_with_runtime.png)
 
 With the £7,500 grant and 25 years of operation:
 

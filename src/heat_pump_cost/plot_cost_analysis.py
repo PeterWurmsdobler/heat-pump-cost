@@ -114,17 +114,21 @@ def run_analysis(initial_heat_loss: float,
     
     # Capital only plots
     plotter = CostPlotter(result1a)
-    plotter.save_plot(output_dir / 'heat_pump_1_no_grant_capital_only.png')
+    plotter.save_plot(output_dir / 'heat_pump_1_no_grant_capital_only.png',
+                      title='Capital costs without government grant')
     
     plotter = CostPlotter(result2a)
-    plotter.save_plot(output_dir / 'heat_pump_2_with_grant_capital_only.png')
+    plotter.save_plot(output_dir / 'heat_pump_2_with_grant_capital_only.png',
+                      title='Capital costs with government grant')
     
     # With runtime costs plots
     plotter = CostPlotter(result1b)
-    plotter.save_plot(output_dir / 'heat_pump_4_no_grant_with_runtime.png')
+    plotter.save_plot(output_dir / 'heat_pump_4_no_grant_with_runtime.png',
+                      title='Total costs without government grant')
     
     plotter = CostPlotter(result2b)
-    plotter.save_plot(output_dir / 'heat_pump_5_with_grant_with_runtime.png')
+    plotter.save_plot(output_dir / 'heat_pump_5_with_grant_with_runtime.png',
+                      title='Total costs with government grant')
     
     print(f"\nAll 4 plots saved to {output_dir}:")
     print(f"\nCapital costs only:")
