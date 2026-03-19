@@ -61,17 +61,6 @@ def run_analysis(initial_heat_loss: float,
     )
     print_summary(result2a)
     
-    # Analysis 3a: 50-year lifecycle - 2 heat pumps - capital only
-    print("\n" + "="*60)
-    print("ANALYSIS 3a: 50-YEAR LIFECYCLE (Capital costs only)")
-    print("="*60)
-    result3a = calculator.calculate_total_cost(
-        num_heat_pumps=2,
-        heat_pump_grants=[7500, 0],
-        runtime_years=0
-    )
-    print_summary(result3a)
-    
     # ========================================================================
     # PART 2: TOTAL LIFECYCLE COSTS (Capital + Runtime)
     # ========================================================================
@@ -103,31 +92,19 @@ def run_analysis(initial_heat_loss: float,
     )
     print_summary(result2b)
     
-    # Analysis 3b: 50-year lifecycle - 2 heat pumps + 50 years runtime
-    print("\n" + "="*60)
-    print("ANALYSIS 3b: 50-YEAR LIFECYCLE + 50 YEARS RUNTIME")
-    print("="*60)
-    result3b = calculator.calculate_total_cost(
-        num_heat_pumps=2,
-        heat_pump_grants=[7500, 0],
-        runtime_years=50,
-        electricity_rate=electricity_rate
-    )
-    print_summary(result3b)
-    
     # ========================================================================
     # Print comparative summaries
     # ========================================================================
     print_comparative_summary(
-        [result1a, result2a, result3a],
-        ["No Grant", "With Grant", "50-yr (2 HPs)"],
+        [result1a, result2a],
+        ["No Grant", "With Grant"],
         "SUMMARY 1: CAPITAL COSTS ONLY"
     )
     
     print_comparative_summary(
-        [result1b, result2b, result3b],
-        ["No Grant", "With Grant", "50-yr (2 HPs)"],
-        "SUMMARY 2: TOTAL LIFECYCLE COSTS (Capital + Runtime)"
+        [result1b, result2b],
+        ["No Grant", "With Grant"],
+        "SUMMARY 2: TOTAL LIFECYCLE COSTS (Capital + Runtime @ 25 years)"
     )
     
     # ========================================================================
@@ -142,9 +119,6 @@ def run_analysis(initial_heat_loss: float,
     plotter = CostPlotter(result2a)
     plotter.save_plot(output_dir / 'heat_pump_2_with_grant_capital_only.png')
     
-    plotter = CostPlotter(result3a)
-    plotter.save_plot(output_dir / 'heat_pump_3_50year_capital_only.png')
-    
     # With runtime costs plots
     plotter = CostPlotter(result1b)
     plotter.save_plot(output_dir / 'heat_pump_4_no_grant_with_runtime.png')
@@ -152,15 +126,10 @@ def run_analysis(initial_heat_loss: float,
     plotter = CostPlotter(result2b)
     plotter.save_plot(output_dir / 'heat_pump_5_with_grant_with_runtime.png')
     
-    plotter = CostPlotter(result3b)
-    plotter.save_plot(output_dir / 'heat_pump_6_50year_with_runtime.png')
-    
-    print(f"\nAll 6 plots saved to {output_dir}:")
+    print(f"\nAll 4 plots saved to {output_dir}:")
     print(f"\nCapital costs only:")
     print(f"  - heat_pump_1_no_grant_capital_only.png")
     print(f"  - heat_pump_2_with_grant_capital_only.png")
-    print(f"  - heat_pump_3_50year_capital_only.png")
-    print(f"\nWith runtime costs:")
+    print(f"\nWith runtime costs (25 years):")
     print(f"  - heat_pump_4_no_grant_with_runtime.png")
     print(f"  - heat_pump_5_with_grant_with_runtime.png")
-    print(f"  - heat_pump_6_50year_with_runtime.png")

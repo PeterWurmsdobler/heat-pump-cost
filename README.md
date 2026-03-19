@@ -63,17 +63,15 @@ heat-pump-cost --electricity-rate 0.20
 
 ## Output
 
-The analysis generates 6 plots:
+The analysis generates 4 plots:
 
 ### Capital Costs Only (Installation costs)
 1. `heat_pump_1_no_grant_capital_only.png` - No grant scenario
 2. `heat_pump_2_with_grant_capital_only.png` - With £7,500 grant
-3. `heat_pump_3_50year_capital_only.png` - 50-year lifecycle (2 heat pumps)
 
-### Total Lifecycle Costs (Capital + Runtime)
-4. `heat_pump_4_no_grant_with_runtime.png` - No grant + 25 years runtime
-5. `heat_pump_5_with_grant_with_runtime.png` - With £7,500 grant + 25 years runtime
-6. `heat_pump_6_50year_with_runtime.png` - 50-year lifecycle + runtime costs
+### Total Lifecycle Costs (Capital + Runtime, 25 years)
+3. `heat_pump_4_no_grant_with_runtime.png` - No grant + 25 years runtime
+4. `heat_pump_5_with_grant_with_runtime.png` - With £7,500 grant + 25 years runtime
 
 ## Data Files
 
@@ -97,13 +95,13 @@ CSV file with insulation improvement options:
 
 The analysis reveals:
 
-1. **Without runtime costs**: Optimal strategy is minimal insulation (loft only) reducing heat loss to 10,000 kWh/year.
+1. **Without runtime costs**: Optimal strategy is minimal insulation (loft and bay window) reducing heat loss to 13,333 kWh/year for £350.
 
-2. **With runtime costs over 50 years**: Optimal point shifts to 9,030 kWh/year, making additional insulation investment economically beneficial.
+2. **With runtime costs over 25 years**: Optimal point shifts to 12,901 kWh/year (£928 insulation), making additional insulation investment economically beneficial.
 
-3. **Runtime costs dominate**: Over a lifecycle, runtime costs represent 56-87% of total costs, fundamentally changing the optimization equation.
+3. **Runtime costs dominate**: Over a 25-year lifecycle, runtime costs represent 58-81% of total costs, fundamentally changing the optimization equation.
 
-4. **Government grant impact**: The £7,500 grant significantly reduces upfront costs but represents only ~40% of the second heat pump replacement cost over 50 years.
+4. **Government grant impact**: The £7,500 grant significantly reduces upfront costs (from £10,662 to £3,162) but doesn't change the optimal insulation level when considering capital costs alone.
 
 ## Development
 
