@@ -1,6 +1,6 @@
 # Heat Pump Cost Analysis
 
-Analysis tool for optimizing the balance between heat pump and insulation investments.
+Analysis tool for optimising the balance between heat pump and insulation investments.
 
 ## Project Structure
 
@@ -17,7 +17,7 @@ heat-pump-cost/
 │       ├── cost_calculator.py      # CostCalculator class
 │       ├── plotter.py              # Plotting utilities
 │       └── plot_cost_analysis.py   # Main analysis script
-├── cost-balance.md                 # Project documentation
+├── article.md                      # Detailed analysis article
 └── pyproject.toml                  # Project configuration
 ```
 
@@ -89,19 +89,25 @@ CSV file with heat pump specifications:
 CSV file with insulation improvement options:
 - `description`: Name of the improvement
 - `cost_gbp`: Cost in £
-- `heat_reduction_kwh`: Annual heat loss reduction in kWh
+- `heat_loss_reduction_watt`: Heat loss reduction in Watts at design conditions (21°C inside, 2°C outside)
 
 ## Key Findings
 
 The analysis reveals:
 
 1. **Without runtime costs**: Optimal strategy is minimal insulation (loft and bay window) reducing heat loss to 13,333 kWh/year for £350.
+   - No grant: £13,223 total
+   - With £7,500 grant: £5,723 total
 
 2. **With runtime costs over 25 years**: Optimal point shifts to 12,901 kWh/year (£928 insulation), making additional insulation investment economically beneficial.
+   - No grant: £28,523 total
+   - With £7,500 grant: £21,023 total
 
-3. **Runtime costs dominate**: Over a 25-year lifecycle, runtime costs represent 58-81% of total costs, fundamentally changing the optimization equation.
+3. **Runtime costs dominate**: Over a 25-year lifecycle, runtime costs represent 52-71% of total costs, fundamentally changing the optimisation equation.
 
-4. **Government grant impact**: The £7,500 grant significantly reduces upfront costs (from £10,662 to £3,162) but doesn't change the optimal insulation level when considering capital costs alone.
+4. **Government grant impact**: The £7,500 grant significantly reduces upfront costs (from £13,223 to £5,723) but doesn't change the optimal insulation level when considering capital costs alone.
+
+5. **Empirical conversion factor**: Heat loss reduction in Watts (at design conditions) is converted to annual kWh using an empirical factor of 2.78, derived from real-world data (9,000 W design → 25,000 kWh/year actual).
 
 ## Development
 
