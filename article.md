@@ -17,7 +17,7 @@ Over an entire year the worst case heat loss for our house was initally estimate
 
 The analysis considers four heat pump sizes suitable for different property types (costs are midpoint estimates from industry data):
 
-| Capacity (kW) | Property Type | Heat Demand (kWh/year) | Electricity Use (kWh/year) | Cost (£) |
+| Capacity<br>(kW) | Property<br>Type | Heat Demand<br>(kWh/year) | Electricity Use<br>(kWh/year) | Cost<br>(£) |
 |---------------|---------------|------------------------|----------------------------|----------|
 | 3.0 | 1-bed flat/Studio | 5,000 | 1,500 | £7,750 |
 | 5.0 | 1-2 bed (Small) | 7,000 | 2,200 | £9,000 |
@@ -28,7 +28,7 @@ The analysis considers four heat pump sizes suitable for different property type
 
 The following insulation improvements have partially been carried out, or for the last two have been considered; they are sorted by cost-effectiveness (Watts of heat reduction per £ spent). The heat loss reductions are given at design conditions (21°C inside, 2°C outside) and converted to annual energy savings using the empirical factor:
 
-| Improvement | Cost (£) | Heat Loss Reduction (W) | Annual Energy Saving (kWh/year) | Cost-Effectiveness (W/£) |
+| Improvement | Cost<br>(£) | Heat Loss<br>Reduction (W) | Annual Energy<br>Saving (kWh/year) | Cost-Effectiveness<br>(W/£) |
 |-------------|----------|------------------------|--------------------------------|------------------------|
 | Loft & eves insulation | £250 | 4,000 | 11,111 | 16.0 |
 | Rockwool internal bay window | £100 | 200 | 556 | 2.0 |
