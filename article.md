@@ -1,6 +1,6 @@
 # Personal Findings for the Fabric First vs Heat Pump First Debate
 
-Heat-pumps for homes constitute an important element in the electrification of our economies, and as such, an important contribution to the reduction of greenhouse gases in the combat against climate change. Yet, there seems to be a divide between those who think that any government policy should address the shortcomings in the poorly insulated housing stock first, i.e. insulating the building fabric, e.g. [Insulate Britain](https://insulatebritain.com/), and others who think that adopting heat-pumps is the most important factor, enabled through the [Boiler Upgrade Scheme (BUS)](https://www.gov.uk/apply-boiler-upgrade-scheme). 
+Heat pumps for homes constitute an important element in the electrification of our economies, and as such, an important contribution to the reduction of greenhouse gases in the combat against climate change. Yet, there seems to be a divide between those who think that any government policy should address the shortcomings in the poorly insulated housing stock first, i.e. insulating the building fabric, e.g. [Insulate Britain](https://insulatebritain.com/), and others who think that adopting heat-pumps is the most important factor, enabled through the [Boiler Upgrade Scheme (BUS)](https://www.gov.uk/apply-boiler-upgrade-scheme). 
 In order to understand the debate better, I have been reading a few books on heat pumps. Among them, ["So You're Thinking About a Heat Pump: The UK Homeowner's Guide to Heat Pumps"](https://www.amazon.co.uk/Youre-Thinking-About-Heat-Pump/dp/B0GK7H511K/) was quite helpful in the process as it addressed the Fabric First vs Heat Pump First debate in a well balanced manner, albeit qualitatively only. The objective of this article is to present some quantitative analysis using estimated heat pump installation and home insulation costs in order to determine an optimal outcome.
 
 ## Analysis Scenario
@@ -36,14 +36,14 @@ The heat demand could be met using a heat pump powered by electricity. Then, the
 
 | Capacity (kW) | Property Type | Cost (£) |
 |---------------|---------------|----------|
+| 1.5 | Studio | £5,500 |
 | 3.0 | 1-bed flat/Studio | £7,750 |
 | 5.0 | 1-2 bed (Small) | £9,000 |
 | 10.0 | 3-4 bed (Medium) | £12,000 |
-| 14.5 | 5+ bed (Large) | £16,500 |
 
 ### Optimisation Objective
 
-The objective of this post is to inform the debate heat-pump first vs fabric first: Where should funds go? To me the debate boils down to an optimisation problem: The optimum lies at the minimum of a cost function, here the total cost function, i.e. combined expenditure for heat-pump and fabric improvement. To that end, improvements are conceptually applied in order of cost-effectiveness, ensuring the most efficient measures are implemented first. The total cost for fabric improvement is cumulative, starting in essence with the current state. As the improvement costs increase, the expected heat losses decreas. Then, for every point of fabric improvement and associated thermal performance, an appropriate heat pump is chosen to meet the power requirements; its power-dependent cost is added to the total cost function.
+The objective of this post is to inform the debate heat-pump first vs fabric first: Where should funds go? To me the debate boils down to an optimisation problem: The optimum lies at the minimum of a cost function, here the total cost function, i.e. combined expenditure for heat-pump and fabric improvement. To that end, improvements are conceptually applied in order of cost-effectiveness, ensuring the most efficient measures are implemented first. The total cost for fabric improvement is cumulative, starting in essence with the current state. As the improvement costs increase, the expected heat losses decrease. Then, for every point of fabric improvement and associated thermal performance, an appropriate heat pump is chosen to meet the power requirements; its power-dependent cost is added to the total cost function.
 
 Two different sub-scenarios are examined with respect to capital expenditure for a 25-year lifetime:
 
@@ -58,10 +58,10 @@ When considering only the upfront capital costs of installation, the analysis re
 
 ### Scenario 1: No Government Grant
 
-Without any government support, the optimal approach requires a total capital investment of **£9,181** which consists of:
+Without any government support, the optimal approach requires a total capital investment of **£8,859** which consists of:
 
 - **£350** for insulation (loft insulation + rock-wool in bay window, reducing heating power from 9.0 to 4.8 kW),
-- **£8,831** for a 4.8 kW heat pump installation.
+- **£8,509** for a 4.8 kW heat pump installation.
 
 ![Capital costs without government grant](assets/heat_pump_1_no_grant_capital_only.png)
 
@@ -69,10 +69,10 @@ The analysis shows that implementing the two most cost-effective improvements co
 
 ### Scenario 2: With £7,500 Government Grant
 
-The UK government's BUS provides a £7,500 grant towards heat pump installation. With this support, the total capital cost reduces to **£1,681**:
+The UK government's BUS provides a £7,500 grant towards heat pump installation. With this support, the total capital cost reduces to **£1,359**:
 
 - **£350** for insulation as before, 4.8 kW worst case heat loss,
-- **£1,331** for a 4.8 kW heat pump (after £7,500 grant deduction).
+- **£1,009** for a 4.8 kW heat pump (after £7,500 grant deduction).
 
 ![Capital costs with government grant](assets/heat_pump_2_with_grant_capital_only.png)
 
@@ -89,10 +89,10 @@ The analysis changes when operational costs, specifically electricity consumptio
 
 ### Scenario 1: No Government Grant
 
-Including 25 years of electricity costs at £0.15/kWh yields the total lifecycle cost: **£21,711** with:
+Including 25 years of electricity costs at £0.15/kWh yields the total lifecycle cost: **£21,391** with:
 
-- Capital costs: £9,409 (insulation £583 + heat pump £8,826),
-- Runtime costs: **£12,355** (56.9% of total).
+- Capital costs: £9,036 (insulation + heat pump),
+- Runtime costs: **£12,355** (57.8% of total).
 
 ![Total costs without government grant](assets/heat_pump_4_no_grant_with_runtime.png)
 
@@ -102,12 +102,12 @@ The runtime costs now exceed the capital investment, showing that operational ex
 
 ![Total costs with government grant](assets/heat_pump_5_with_grant_with_runtime.png)
 
-With the £7,500 grant and 25 years of operation the total lifecycle cost: **£14,211** including:
+With the £7,500 grant and 25 years of operation the total lifecycle cost: **£13,891** including:
 
-- Capital costs: £1,909 (insulation £583 + heat pump £1,326),
-- Runtime costs: **£12,355** (87.0% of total).
+- Capital costs: £1,536 (insulation + heat pump after grant),
+- Runtime costs: **£12,355** (88.9% of total).
 
-The grant reduces capital costs, but runtime costs remain unchanged. Runtime expenses now constitute 87% of total lifecycle costs, emphasising that the grant primarily addresses the upfront barrier rather than long-term economics, similar to the capital cost only case.
+The grant reduces capital costs, but runtime costs remain unchanged. Runtime expenses now constitute 89% of total lifecycle costs, emphasising that the grant primarily addresses the upfront barrier rather than long-term economics, similar to the capital cost only case.
 
 ## Conclusion
 
@@ -115,7 +115,7 @@ The "fabric first vs heat pump first" debate has a clearer answer when heat pump
 
 The key insight is that modern heat pumps with SCOP ≈ 4 are sufficiently efficient that electricity costs, while substantial (£494/year or £12,355 over 25 years), do not justify extensive insulation measures like external wall insulation (£12,000) or triple glazing (£10,000). The optimal solution lies in implementing the most cost-effective improvements (loft insulation, bay window, entrance glazing) which provide good thermal performance at modest cost.
 
-With the government grant, runtime costs dominate the total lifecycle cost (87%), yet the grant's £7,500 capital cost reduction has a larger impact on total cost than would be achieved through extreme insulation investment. Current policy effectively addresses both upfront and long-term economics by making heat pumps accessible while their efficiency keeps operational costs manageable.
+With the government grant, runtime costs dominate the total lifecycle cost (89%), yet the grant's £7,500 capital cost reduction has a larger impact on total cost than would be achieved through extreme insulation investment. Current policy effectively addresses both upfront and long-term economics by making heat pumps accessible while their efficiency keeps operational costs manageable.
 
 For a 25-year ownership horizon, the analysis reveals that a balanced "Heat Pump First with Sensible Insulation" approach is optimal. The efficiency of modern heat pumps means that moderate insulation investment (£350-£600) combined with a properly-sized heat pump provides the best economic outcome, whether considering capital costs alone or including 25 years of operation.
 
