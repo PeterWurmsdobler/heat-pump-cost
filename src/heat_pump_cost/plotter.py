@@ -86,14 +86,14 @@ class CostPlotter:
             else:
                 grant_label = ""
         
-        ax.plot(hp_arrays['demand'], hp_cost_with_runtime, 's-', 
+        ax.plot(hp_arrays['capacity'], hp_cost_with_runtime, 's-', 
                 label=f'Heat pump cost{grant_label}', 
                 color='red', linewidth=2, markersize=8)
         
         # Plot heat pump fit curve
-        hp_demand_fine = np.linspace(min(hp_arrays['demand']), max(hp_arrays['demand']) + 2000, 200)
-        hp_cost_fine = hp_fit(hp_demand_fine)
-        ax.plot(hp_demand_fine, hp_cost_fine, '--', 
+        hp_capacity_fine = np.linspace(min(hp_arrays['capacity']), max(hp_arrays['capacity']) + 2, 200)
+        hp_cost_fine = hp_fit(hp_capacity_fine)
+        ax.plot(hp_capacity_fine, hp_cost_fine, '--', 
                 color='red', alpha=0.5, linewidth=1,
                 label='Heat pump cost trend')
         
@@ -104,10 +104,10 @@ class CostPlotter:
         
         # Find and mark the minimum total cost
         ax.plot(min_heat_loss, min_total_cost, 'g*', 
-                markersize=20, label=f'Optimal: {min_heat_loss:.0f} kWh, £{min_total_cost:.0f}')
+                markersize=20, label=f'Optimal: {min_heat_loss:.1f} kW, £{min_total_cost:.0f}')
         
         # Add annotation for optimal point
-        ax.annotate(f'Optimal Point\n{min_heat_loss:.0f} kWh\n£{min_total_cost:.0f}',
+        ax.annotate(f'Optimal Point\n{min_heat_loss:.1f} kW\n£{min_total_cost:.0f}',
                     xy=(min_heat_loss, min_total_cost),
                     xytext=(0, 80), textcoords='offset points',
                     arrowprops=dict(arrowstyle='->', color='green', lw=2),
@@ -117,6 +117,7 @@ class CostPlotter:
         # Annotate home improvements with varied positioning for better readability
         # Define offset patterns that follow the curve progression with minimal y offset
         offset_patterns = [
+            (80, 30),    # Starting point - right and slightly above
             (120, 10),   # First improvement (loft) - right, minimal up
             (120, 20),   # Second (bay window) - right, slightly up
             (120, 30),   # Third (entrance glazing) - right, a bit more up
@@ -127,27 +128,26 @@ class CostPlotter:
         ]
         
         for i, name in enumerate(improvement_names):
-            if i > 0:  # Skip "Start" as it's at the starting point
-                # Use cycling offset pattern
-                offset_idx = (i - 1) % len(offset_patterns)
-                offset = offset_patterns[offset_idx]
-                
-                ax.annotate(name.title(), 
-                           xy=(heat_loss[i], insulation_cost[i]),
-                           xytext=offset, textcoords='offset points',
-                           fontsize=8, alpha=0.7,
-                           arrowprops=dict(arrowstyle='->', lw=0.5, alpha=0.5, color='blue'))
+            # Annotate all points including the starting point
+            offset_idx = i % len(offset_patterns)
+            offset = offset_patterns[offset_idx]
+            
+            ax.annotate(name.title(), 
+                       xy=(heat_loss[i], insulation_cost[i]),
+                       xytext=offset, textcoords='offset points',
+                       fontsize=8, alpha=0.7,
+                       arrowprops=dict(arrowstyle='->', lw=0.5, alpha=0.5, color='blue'))
         
         # Annotate heat pumps
         if 'property_types' in hp_arrays:
             for i, prop_type in enumerate(hp_arrays['property_types']):
                 ax.annotate(f"{prop_type}\n{hp_arrays['capacity'][i]:.1f} kW", 
-                           xy=(hp_arrays['demand'][i], hp_cost_with_runtime[i]),
+                           xy=(hp_arrays['capacity'][i], hp_cost_with_runtime[i]),
                            xytext=(10, -15), textcoords='offset points',
                            fontsize=8, alpha=0.7, color='darkred')
         
         # Labels and title
-        ax.set_xlabel('Heat Loss / Heat Demand (kWh/year)', fontsize=12, fontweight='bold')
+        ax.set_xlabel('Heating Power (kW)', fontsize=12, fontweight='bold')
         ax.set_ylabel('Cost (£)', fontsize=12, fontweight='bold')
         
         if title_suffix:
@@ -194,9 +194,9 @@ def print_summary(result: Dict, title: str = "ANALYSIS SUMMARY"):
     print("="*60)
     print(title)
     print("="*60)
-    print(f"\nInitial heat loss: {result['initial_heat_loss']:,} kWh/year")
-    print(f"Optimal heat loss: {result['min_heat_loss']:.0f} kWh/year")
-    print(f"Heat loss reduction: {result['initial_heat_loss'] - result['min_heat_loss']:.0f} kWh/year")
+    print(f"\nInitial heating power: {result['initial_heat_loss']:.1f} kW")
+    print(f"Optimal heating power: {result['min_heat_loss']:.1f} kW")
+    print(f"Heating power reduction: {result['initial_heat_loss'] - result['min_heat_loss']:.1f} kW")
     print(f"\nInsulation cost: £{result['insulation_cost']:.0f}")
     print(f"Number of heat pumps: {result['num_heat_pumps']}")
     print(f"Heat pump cost (single unit): £{result['hp_cost_single']:.0f}")
@@ -242,22 +242,22 @@ def print_comparative_summary(results: list, labels: list, title: str = "COMPARA
     print(header)
     print("-"*90)
     
-    # Initial heat loss
-    row = f"{'Initial heat loss (kWh/year)':<{metric_width}}"
+    # Initial heating power
+    row = f"{'Initial heating power (kW)':<{metric_width}}"
     for result in results:
-        row += f" {result['initial_heat_loss']:>{col_width},}"
+        row += f" {result['initial_heat_loss']:>{col_width}.1f}"
     print(row)
     
-    # Optimal heat loss
-    row = f"{'Optimal heat loss (kWh/year)':<{metric_width}}"
+    # Optimal heating power
+    row = f"{'Optimal heating power (kW)':<{metric_width}}"
     for result in results:
-        row += f" {result['min_heat_loss']:>{col_width}.0f}"
+        row += f" {result['min_heat_loss']:>{col_width}.1f}"
     print(row)
     
-    # Heat loss reduction
-    row = f"{'Heat loss reduction (kWh/year)':<{metric_width}}"
+    # Heating power reduction
+    row = f"{'Heating power reduction (kW)':<{metric_width}}"
     for result in results:
-        row += f" {result['initial_heat_loss'] - result['min_heat_loss']:>{col_width}.0f}"
+        row += f" {result['initial_heat_loss'] - result['min_heat_loss']:>{col_width}.1f}"
     print(row)
     
     print()
