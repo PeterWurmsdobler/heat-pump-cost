@@ -1,7 +1,9 @@
-# Personal Findings for the Fabric First vs Heat Pump First Debate
+# Considerations for the Fabric First vs Heat Pump First Debate
 
-Heat pumps for homes constitute an important element in the electrification of our economies, and as such, an important contribution to the reduction of greenhouse gases in the combat against climate change. Yet, there seems to be a divide between those who think that any government policy should address the shortcomings in the poorly insulated housing stock first, i.e. insulating the building fabric, e.g. [Insulate Britain](https://insulatebritain.com/), and others who think that adopting heat-pumps is the most important factor, enabled through the [Boiler Upgrade Scheme (BUS)](https://www.gov.uk/apply-boiler-upgrade-scheme). 
-In order to understand the debate better, I have been reading a few books on heat pumps. Among them, ["So You're Thinking About a Heat Pump: The UK Homeowner's Guide to Heat Pumps"](https://www.amazon.co.uk/Youre-Thinking-About-Heat-Pump/dp/B0GK7H511K/) was quite helpful in the process as it addressed the Fabric First vs Heat Pump First debate in a well balanced manner, albeit qualitatively only. The objective of this article is to present some quantitative analysis using estimated heat pump installation and home insulation costs in order to determine an optimal outcome.
+Heat pumps for homes constitute an important element in the electrification of our economies, and as such, an important contribution to the reduction of greenhouse gases in the combat against climate change. Yet, there seems to be a divide between those who think that any government policy should address the shortcomings in the poorly insulated housing stock first, i.e. insulating the building fabric, e.g. [Insulate Britain](https://insulatebritain.com/), and those who think that adopting heat-pumps is the most important cause, enabled through the [Boiler Upgrade Scheme (BUS)](https://www.gov.uk/apply-boiler-upgrade-scheme). 
+In order to understand the debate better, I have been reading a few books on heat pumps. Among them, ["So You're Thinking About a Heat Pump: The UK Homeowner's Guide to Heat Pumps"](https://www.amazon.co.uk/Youre-Thinking-About-Heat-Pump/dp/B0GK7H511K/) was quite helpful in the process as it addressed the Fabric First vs Heat Pump First debate in a well balanced manner. 
+
+The objective of this post is to inform the debate heat-pump first vs fabric first. To me, this debate is not so much a question whether to go with one or the other as if they were mutually exclusive. Rather, it is a question of balance in investment: what combination of measures will have more impact; it boils down to an optimisation problem. To this end, this article presents some quantitative analysis on my own house using estimated heat pump installation and home insulation costs in order to determine an optimal outcome.
 
 ## Analysis Scenario
 
@@ -32,7 +34,7 @@ After implementing all improvements except the last two (external wall insulatio
 
 ### Heat Pump Options
 
-The heat demand could be met using a heat pump powered by electricity. Then, the so-called **Seasonal Coefficient of Performance (SCOP)**, the ratio of heat output to electricity input, will then determine how much electric energy is needed to produce the same amount of heat; the SCOP can be expected to be around **4.0** for modern air-source heat pumps under UK conditions. The analysis here considers four heat pump sizes, i.e. power ratings or heat capacity in kW (costs are midpoint estimates from industry data):
+The heat demand can be met using a heat pump powered by electricity. Then, the so-called **Seasonal Coefficient of Performance (SCOP)**, the ratio of heat output to electricity input, will then determine how much electric energy is needed to produce the same amount of heat; the SCOP can be expected to be around **4.0** for modern air-source heat pumps under UK conditions. The analysis here considers four heat pump sizes, i.e. power ratings or heat capacity in kW (costs are midpoint estimates from industry data):
 
 | Capacity (kW) | Property Type | Cost (£) |
 |---------------|---------------|----------|
@@ -43,7 +45,7 @@ The heat demand could be met using a heat pump powered by electricity. Then, the
 
 ### Optimisation Objective
 
-The objective of this post is to inform the debate heat-pump first vs fabric first: Where should funds go? To me the debate boils down to an optimisation problem: The optimum lies at the minimum of a cost function, here the total cost function, i.e. combined expenditure for heat-pump and fabric improvement. To that end, improvements are conceptually applied in order of cost-effectiveness, ensuring the most efficient measures are implemented first. The total cost for fabric improvement is cumulative, starting in essence with the current state. As the improvement costs increase, the expected heat losses decrease. Then, for every point of fabric improvement and associated thermal performance, an appropriate heat pump is chosen to meet the power requirements; its power-dependent cost is added to the total cost function.
+The optimum balance between heat-pump and fabric investment lies at the minimum of a cost function, here the combined expenditure for heat-pump and fabric improvement. To that end, improvements are conceptually applied in order of cost-effectiveness, ensuring the most efficient measures are implemented first. The total cost for fabric improvement is cumulative, starting in essence with the current state. As the improvement costs increase, the expected heat losses decrease. Then, for every point of fabric improvement and associated thermal performance, an appropriate heat pump is chosen to meet the power requirements; its power-dependent cost is added to the total cost function.
 
 Two different sub-scenarios are examined with respect to capital expenditure for a 25-year lifetime:
 
