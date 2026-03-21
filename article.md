@@ -78,8 +78,6 @@ The UK government's BUS provides a £7,500 grant towards heat pump installation.
 
 ![Capital costs with government grant](assets/heat_pump_2_with_grant_capital_only.png)
 
-### Key Insight: Capital Costs Only
-
 When considering capital costs alone, the optimal strategy in both scenarios is identical: invest £350 in the two most cost-effective improvements (loft insulation and bay window insulation) to reduce heating power to 4.8 kW. The government grant provides significant immediate cost relief (£7,500 savings), making heat pumps more accessible without changing the underlying optimisation.
 
 ## Capital and Operational Expenditure
@@ -102,12 +100,12 @@ The runtime costs now exceed the capital investment, showing that operational ex
 
 ### Scenario 2: With £7,500 Government Grant
 
-![Total costs with government grant](assets/heat_pump_5_with_grant_with_runtime.png)
-
 With the £7,500 grant and 25 years of operation the total lifecycle cost: **£13,891** including:
 
 - Capital costs: £1,536 (insulation + heat pump after grant),
 - Runtime costs: **£12,355** (88.9% of total).
+
+![Total costs with government grant](assets/heat_pump_5_with_grant_with_runtime.png)
 
 The grant reduces capital costs, but runtime costs remain unchanged. Runtime expenses now constitute 89% of total lifecycle costs, emphasising that the grant primarily addresses the upfront barrier rather than long-term economics, similar to the capital cost only case.
 
