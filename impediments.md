@@ -1,7 +1,8 @@
 # Impediments to UK heat-pump Adoption and Possible Solutions
 
-Heat pumps for homes constitute an important element in the electrification of our economies, and as such, an important contribution to the reduction of greenhouse gases in the combat against climate change. Yet, there are two main impediments to their adoption: capital expenditure and the "spark gap". The latter refers to the ratio of electricity to gas price which is quite often larger than the Coefficient of Performance (COP) obtained with a heat-pump; as a result the operational costs for a heat-pump through electricity are higher than heating on gas. The former refers to prohibitive upfront costs of a heat pump system installation due to oversized pumps, unnecessary plumbing and related work and is the focus of this article.
+[Considerations for the Fabric First vs Heat Pump First Debate](https://medium.com/@peter-wurmsdobler/considerations-for-the-fabric-first-vs-heat-pump-first-debate-950788085cf1) already stressed the importance of heat pumps for homes in the electrification of our economies, and as such, their contribution to the reduction of greenhouse gases in the combat against climate change. Yet, there are two major impediments to their adoption: capital expenditure and the "spark gap". The latter refers to the ratio of electricity to gas price which is quite often larger than the [Coefficient of Performance](https://en.wikipedia.org/wiki/Coefficient_of_performance) (COP) obtained with a heat-pump; as a result the operational costs for a heat-pump through electricity are higher than by heating on gas. The former refers to prohibitive upfront costs of a heat pump system installation due to oversized pumps, complex system design with many discrete components and related plumbing work and is the focus of this article. The conclusion is that a heat-pump installation has to be on par in complexity and cost with a combi-boiler installation in order to become acceptable to the majority of home owners and not only to early adopters who are prepared to put up with higher costs and hassle, often for non-economic reasons.
 
+![Complex system with many components](assets/components.png)
 
 ## Historic Context in the UK
 
@@ -13,7 +14,7 @@ The current state of affairs is that there is a range of installations: estimate
 
 ## Costs of a Real Installation
 
-The capital expenditure for a heat pump installation extends well beyond the outdoor unit typically featured in marketing materials. While the outdoor unit itself costs £3,000-£8,000 depending on capacity, a complete installation requires numerous additional components, extensive plumbing work, and substantial labour. Total installation costs in the UK typically range from £15,000 to £25,000, even after accounting for the £7,500 Boiler Upgrade Scheme (BUS) grant. A typical heat pump system installation includes:
+The capital expenditure for a heat pump installation extends well beyond the outdoor unit typically featured in marketing materials, or in [Considerations for the Fabric First vs Heat Pump First Debate](https://medium.com/@peter-wurmsdobler/considerations-for-the-fabric-first-vs-heat-pump-first-debate-950788085cf1). While the outdoor unit itself costs £3,000-£8,000 depending on capacity, a complete installation requires numerous additional components, extensive plumbing work, and substantial labour. Total installation costs in the UK typically range from £15,000 to £25,000, even after accounting for the £7,500 Boiler Upgrade Scheme (BUS) grant. A typical heat pump system installation includes:
 
 **Core Heat Pump Components:**
 - Outdoor unit (air-source heat pump): £3,000-£8,000
@@ -181,10 +182,3 @@ Installation could proceed over two days: removal of existing boiler, positionin
 - Total: £7,000-£11,000, after £7,500 BUS grant: £0-£3,500 net cost
 
 These figures assume achievement of manufacturing economies of scale and adoption of simplified installation procedures. Implementation would require coordination among manufacturers for integration and production scaling, standards bodies for communication protocol definition, policy makers for appropriate incentive structures, and installers for streamlined deployment methods.
-
-
-
-
-
-
-
