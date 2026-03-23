@@ -18,7 +18,7 @@ In this state, the worst case annual heat loss was estimated to be approximately
 
 ### Home Improvement Options
 
-The following improvements have been considered from the very start; they are sorted by cost-effectiveness (Watts of heat reduction per £ spent). The heat loss reductions are given at winter conditions (21°C inside, 2°C outside). 
+The following improvements have been considered from the very start; they are sorted by cost-effectiveness (Watts of heat reduction per £ spent) <sup>1</sup>. The heat loss reductions are given at winter conditions (21°C inside, 2°C outside). 
 
 | Improvement | Cost (£) | Heat Loss<br>Reduction (W) | Effectiveness<br>(W/£) |
 |-------------|----------|------------------------|------------------------|
@@ -34,7 +34,7 @@ After implementing all improvements except the last two (external wall insulatio
 
 ### Heat Pump Options
 
-The heat demand can be met using a heat pump powered by electricity. Then, the so-called **Seasonal Coefficient of Performance (SCOP)**, the ratio of heat output to electricity input, will then determine how much electric energy is needed to produce the same amount of heat; the SCOP can be expected to be around **4.0** for modern air-source heat pumps under UK conditions. The analysis here considers four heat pump sizes, i.e. power ratings or heat capacity in kW (costs are midpoint estimates from industry data):
+The heat demand can be met using a heat pump powered by electricity. Then, the so-called **Seasonal Coefficient of Performance (SCOP)**, the ratio of heat output to electricity input, will then determine how much electric energy is needed to produce the same amount of heat; the SCOP can be expected to be around **4.0** for modern air-source heat pumps under UK conditions. The analysis here considers four heat pump sizes, i.e. power ratings or heat capacity in kW (costs are midpoint estimates from industry data) <sup>2</sup>:
 
 | Capacity (kW) | Property Type | Cost (£) |
 |---------------|---------------|----------|
@@ -120,5 +120,13 @@ With the government grant, runtime costs dominate the total lifecycle cost (89%)
 For a 25-year ownership horizon, the analysis reveals that a balanced "Heat Pump First with Sensible Insulation" approach is optimal. The efficiency of modern heat pumps means that moderate insulation investment (£350-£600) combined with a properly-sized heat pump provides the best economic outcome, whether considering capital costs alone or including 25 years of operation.
 
 ---
+
+## Post-Scriptum
+
+Following the publication a few issues where raised:
+
+1. Surprising loft insulation gain and cost. Indeed, £350 for insulation reducing heat loss by nearly 50% could be the headline for a tabloid; but according to my calculations, and subsequent experience, thorough insulation did make a big difference. The previous owner(s) had a one inch thick fleece of some kind between the joists in the loft. I took everything out, hovered all to make the entire loft clean and put down 300mm rock-wool, 100mm between the joists, and 200mm on top. When I changed the fascia & soffit I pushed 50mm rock-wool slabs up the eaves to meet the rock-wool in the loft; I also filled up the space above the back window and all window lintels. It all made the house much warmer, and my modelling showed the change from a U-value of 5.2 W/m²K to 0.1 W/m²K for the top (30m²) and 0.6W/m²K for the eaves (10m²). These areas were the lowest hanging fruit. Of course, the material was £350 and I did not account for my labour as almost everybody can do that.
+
+2. Installation and running cost too low. The prices shown for installation covers the heat-pump proper; of course, at times additional work is required such as adding a hot water tank, upgrading radiators and even pipework, adding a few thousand pounds to the bill. As far as running costs are concerned, from people here in Cambridge I gathered that 15p for was an achievable average with some smart control; of course the average price depends on the electricity contract and usage pattern. All would increase the total cost proportional to the power rating. However, please observe that the insulation cost curve is a 1/x^y, or a hockey stick, with a strong kink caused by the considerable reduction through loft insulation, little gains for other bits, but high costs for external wall insulation and triple glazing. The heat-pump cost is nearly linear with a small slope. Consequently the minimum of the combined curve is nearly invariant to the total cost of the heat-pump, with or without running costs: minimum insulation with the maximum effect, then get a heat pump.
 
 *Analysis based on: 1930s semi-detached house, Code and methodology available at [github.com/PeterWurmsdobler/heat-pump-cost](https://github.com/PeterWurmsdobler/heat-pump-cost).*
