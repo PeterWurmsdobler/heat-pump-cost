@@ -72,9 +72,9 @@ Modern combi-boilers replaced complex multi-component heating systems with singl
 
 Several manufacturers have developed systems approaching this integration:
 
-**Viessmann Vitocal 151-A:** A split system combining an outdoor mono-bloc unit with an indoor unit containing integrated hot water cylinder, circulation pump, expansion vessel, controls, and ancillary components in a pre-plumbed package. The footprint is comparable to a floor-standing boiler such as the Vitodens 222-F, making it nearly a drop-in replacement.
-
-**Bosch Compress 6800i AW:** Incorporates an integrated internal storage tank in a compact design. However, this model is not currently available in the UK market.
+- **Viessmann Vitocal 151-A:** Indoor unit comparable to the Vitodens 222-F, nearly a drop-in replacement
+- **Bosch Compress 6800i AW MB:** New generation heat pump with 0.36 m² indoor footprint, not available in the UK
+- **Vaillant aroTHERM Plus:** 7kW heat pump with 190L uniTOWER cylinder
 
 ### Potential Benefits of Integration
 
@@ -96,9 +96,20 @@ Current installations cost £15,000-£25,000. With integrated appliances and sim
 
 Radiator replacement constitutes a significant cost in heat pump installations. Heat pumps operate at lower flow temperatures (35-45°C) compared to gas boilers (60-80°C), and installers commonly recommend upgrading to larger, double-panel radiators in order to transmit the same amount of heat. However, advanced control systems offer an alternative approach that may reduce or eliminate this requirement.
 
+### Control System Challenges
+
+Traditional Thermostatic Radiator Valves (TRVs) present operational challenges with heat pumps. TRVs were designed for high-temperature gas boiler systems with bypass circuits. When a TRV closes to limit room temperature, it restricts flow, which conflicts with the heat pump's requirement for constant high-volume, low-temperature circulation. Both central heat pump control and TRVs will start beating each other, resulting in oscillations and poor performance.
+
+For properties with consistent occupancy and uniform heating requirements, a properly designed system with correctly sized and balanced radiators can be modulated centrally through common flow and flow temperature, with all zones responding uniformly. However, for properties with variable occupancy patterns or differential zone heating needs, distributed intelligent control offers additional functionality. Modern control systems address these challenges through:
+
+- **MIMO control** (Multiple-Input Multiple-Output) treating the home as an interconnected thermal environment
+- **Predictive algorithms** incorporating weather forecasts and occupancy patterns
+- **Zone management** allowing different temperature profiles without flow restriction
+- **Weather compensation** adjusting flow temperature based on outdoor conditions
+
 ### The Adia Hub Approach
 
-There happens to be a system by UK company [Adia Thermal](https://adiathermal.co.uk/); the Adia Hub system provides one method for managing existing radiator infrastructure through intelligent control rather than hardware replacement. The system comprises:
+[Adia Thermal'](https://adiathermal.co.uk/) Adia Hub system provides one method for managing existing radiator infrastructure through intelligent control rather than hardware replacement. The system comprises:
 
 - Smart thermostatic valves on each radiator,
 - Room temperature sensors throughout the home,
@@ -113,50 +124,32 @@ Reported benefits include:
 - Minimal additional components beyond DHW cylinder and expansion vessel,
 - Compatibility with multiple heat pump brands (Ideal, Haier, Samsung, Vaillant, Midea, Bosch Compress 2000).
 
-### Control System Challenges
-
-Traditional Thermostatic Radiator Valves (TRVs) present operational challenges with heat pumps. TRVs were designed for high-temperature gas boiler systems with bypass circuits. When a TRV closes to limit room temperature, it restricts flow, which conflicts with the heat pump's requirement for constant high-volume, low-temperature circulation. Both central heat-pump control and TRVs will start beating each other resulting in oscillations and poor performance. Modern control systems address this through:
-
-- **MIMO control** (Multiple-Input Multiple-Output) treating the home as an interconnected thermal environment
-- **Predictive algorithms** incorporating weather forecasts and occupancy patterns
-- **Zone management** allowing different temperature profiles without flow restriction
-- **Weather compensation** adjusting flow temperature based on outdoor conditions
-
-### Implementation Considerations
-
-The Adia Hub currently interfaces with several heat pump manufacturers through standardised Modbus/TCP communication. Extension to additional brands, or direct integration of their or similar control logic into manufacturer systems, could broaden adoption; Traditional suppliers are usually very good mass manufacturing pumps and components and have less experience in modern software development.
-
-An alternative perspective maintains that in properly designed systems—with correctly sized radiators, constant flow parameters, and stable conditions—individual valve control may be unnecessary. Such systems can be modulated centrally with all zones responding uniformly. This approach works well for properties with consistent occupancy and heating requirements.
-
-For properties with variable occupancy patterns or differential zone heating needs, distributed intelligent control offers additional functionality. The critical consideration is avoiding operational conflicts between local TRVs and centralised heat pump controllers—either through elimination of local control or through coordinated intelligent management.
+The Adia Hub currently interfaces with several heat pump manufacturers through standardised Modbus/TCP communication. Extension to additional brands, or direct integration of similar control logic into manufacturer systems, could broaden adoption. Traditional suppliers excel at mass manufacturing pumps and components but have less experience in modern software development, creating opportunities for collaboration or licensing arrangements.
 
 
 ## Integrated System Configuration
 
 An integrated heat pump system suitable for UK residential properties would combine hardware simplicity with intelligent control:
 
-### Hardware Configuration
-
 **Outdoor Unit:**
-- Mono-bloc air-source heat pump with all refrigerant components contained,
-- Weatherproof construction with acoustic output below 45 dB,
-- Capacity matched to building requirements (typically 3-10 kW).
+- Mono-bloc air-source heat pump with all refrigerant components contained
+- Weatherproof construction with acoustic output below 45 dB
+- Capacity matched to building requirements (typically 3-10 kW)
 
 **Indoor Unit** (60cm × 60cm footprint, up to 2m tall):
-- Integrated insulated hot water cylinder (200-250L),
-- Plate heat exchanger for instantaneous DHW from mains,
-- Circulation pump for heating circuit,
-- Expansion vessels for heating and DHW circuits,
-- Diverter valves for heating/DHW priority management,
-- Pre-assembled and tested hydraulic components,
-- Integrated controls and communication interfaces.
+- Integrated insulated hot water cylinder (200-250L)
+- Plate heat exchanger for instantaneous DHW from mains
+- Circulation pump for heating circuit
+- Expansion vessels for heating and DHW circuits
+- Diverter valves for heating/DHW priority management
+- Pre-assembled and tested hydraulic components
+- Integrated controls and communication interfaces
 
 **Standard Connections:**
-- Single electrical connection (32A dedicated circuit),
-- Mains cold water input,
-- Hot water output (DHW),
-- Heating flow and return (2 pipes),
-- Connection to outdoor unit (2 insulated pipes).
+- Single electrical connection to internal unit also powering external unit
+- Mains cold water input and hot water output (DHW)
+- Connection to outdoor unit (2 insulated pipes)
+- Heating flow and return (2 pipes)
 
 This configuration occupies space equivalent to a floor-standing combi-boiler or washing machine, compatible with typical UK homes without basements or plant rooms.
 
@@ -165,29 +158,27 @@ This configuration occupies space equivalent to a floor-standing combi-boiler or
 Once the hardware has been commoditised by companies that have experience in making white goods, the added value and differentiation lies mostly in the control system:
 
 **Integrated Smart Controller:**
-- Weather compensation
-- Time-of-use tariff optimisation
-- DHW scheduling with legionella protection
-- Self-learning algorithms for occupancy patterns
-- Remote monitoring and control capability
+- Weather compensation,
+- Time-of-use tariff optimisation,
+- DHW scheduling with legionella protection,
+- Self-learning algorithms for occupancy patterns,
+- Remote monitoring and control capability.
 
 **Smart Zone Management:**
-- Wireless smart radiator valves in all rooms
-- Room temperature sensors
-- Hub controller for MIMO optimisation
-- Heat pump integration via standard protocols (Modbus/TCP)
-- Dynamic flow balancing
-- Multi-zone temperature profiles
+- Wireless smart radiator valves in all rooms,
+- Room temperature sensors,
+- Hub controller for MIMO optimisation,
+- Heat pump integration via standard protocols (Modbus/TCP),
+- Dynamic flow balancing,
+- Multi-zone temperature profiles.
 
 ### Installation and Economics
 
-Installation could proceed over two days: removal of existing boiler, positioning of indoor and outdoor units, and pipe connections on day one; electrical work, commissioning, and control installation on day two.
+Installation could proceed over two days: removal of existing boiler, positioning of indoor and outdoor units, and pipe connections on day one; electrical work, commissioning, and control installation on day two. The estimated costs with this approach:
 
-Estimated costs with this approach:
-- Equipment: £5,000-£8,000 (assuming mass production)
+- Equipment: £5,000-£8,000 (assuming mass production at white good's scale)
 - Installation: £2,000-£3,000 (simplified 2-day procedure)
-- Total: £7,000-£11,000
-- After £7,500 BUS grant: £0-£3,500 net cost
+- Total: £7,000-£11,000, after £7,500 BUS grant: £0-£3,500 net cost
 
 These figures assume achievement of manufacturing economies of scale and adoption of simplified installation procedures. Implementation would require coordination among manufacturers for integration and production scaling, standards bodies for communication protocol definition, policy makers for appropriate incentive structures, and installers for streamlined deployment methods.
 
