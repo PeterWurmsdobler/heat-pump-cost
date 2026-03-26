@@ -22,3 +22,4 @@ dev = [
 
 [project.scripts]
 heat-pump-cost = "heat_pump_cost.cli:main"
+heat-pump-operations = "heat_pump_cost.operations_model:run_operations_analysis"
