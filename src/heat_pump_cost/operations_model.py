@@ -18,19 +18,19 @@ CP = 4180.0  # Specific heat capacity of water [J/kg/K]
 
 # House thermal properties
 HTC = 244.0  # Heat Transfer Coefficient [W/K]
-TI = 18.0  # Indoor temperature [°C] (January 2026 average)
+TI = 19.0  # Indoor temperature [°C] (January 2026 average)
 TO = 5.0  # Outdoor temperature [°C] (January 2026 average)
 
 # Radiator properties
 # Empirically calibrated from January 2026 actual operation:
-# - Average heating power: 2.0 kW at Ti=18°C, To=5°C
+# - Average heating power: 1.96 kW at Ti=19°C, To=5°C
 # - Observed mean radiator temp: ~47.5°C
 # - This includes all radiators + pipework heat distribution
-K_RAD = 34.6  # Empirical radiator constant [W/K^n]
+K_RAD = 36.4  # Empirical radiator constant [W/K^n]
 N_RAD = 1.2  # Radiator exponent
 
 # Target heating power (actual average from January 2026)
-Q_TARGET = 2000.0  # [W] = 2.0 kW average space heating from radiators
+Q_TARGET = 1960.0  # [W] = 1.96 kW average space heating from radiators
 
 
 def radiator_power(tf, tr, ti=TI):
