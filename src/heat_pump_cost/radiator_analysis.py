@@ -183,9 +183,9 @@ def plot_performance_vs_power(k_rad=K_CURRENT, vf=VF_FIXED,
     color2 = 'tab:green'
     ax2.set_ylabel('COP', fontsize=12, color=color2)
     line2 = ax2.plot(powers_kw, cops, color=color2, linewidth=2, label='Heat Pump COP')
-    line3 = ax2.axhline(y=3.6, color='red', linestyle='--', linewidth=2, label='Break-even COP = 3.6')
+    line3 = ax2.axhline(y=4.67, color='red', linestyle='--', linewidth=2, label='Break-even COP = 4.67')
     ax2.tick_params(axis='y', labelcolor=color2)
-    ax2.set_ylim([1.5, 6.0])
+    ax2.set_ylim([1.5, 6.5])
     
     # Mark the three key power levels on COP axis
     for qk in key_powers:
@@ -242,11 +242,11 @@ def plot_performance_vs_k(power_levels=[1960, 2335, 3120], vf=VF_FIXED,
     ax2.xaxis.set_ticks_position('top')
     ax2.xaxis.set_label_position('top')
     ax2.set_ylabel('COP', fontsize=12, color='black')
-    ax2.set_ylim([1.5, 5.5])
+    ax2.set_ylim([1.5, 7.0])
     
     # Plot break-even line
-    ax2.axhline(y=3.6, color='black', linestyle='--', linewidth=2, 
-                label='Target COP = 3.6', alpha=0.7)
+    ax2.axhline(y=4.67, color='black', linestyle='--', linewidth=2, 
+                label='Target COP = 4.67', alpha=0.7)
     
     lines_temp = []
     lines_cop = []
@@ -281,21 +281,21 @@ def plot_performance_vs_k(power_levels=[1960, 2335, 3120], vf=VF_FIXED,
         lines_temp.extend(line_t)
         lines_cop.extend(line_c)
         
-        # Find intersection with COP = 3.6
+        # Find intersection with COP = 4.67
         valid_mask = ~np.isnan(cops)
         if np.any(valid_mask):
             valid_k = k_values[valid_mask]
             valid_cop = cops[valid_mask]
             
-            # Find where COP crosses 3.6
-            if np.any(valid_cop > 3.6):
-                # Interpolate to find exact K where COP = 3.6
-                idx = np.where(valid_cop > 3.6)[0][0]
+            # Find where COP crosses 4.67
+            if np.any(valid_cop > 4.67):
+                # Interpolate to find exact K where COP = 4.67
+                idx = np.where(valid_cop > 4.67)[0][0]
                 if idx > 0:
                     # Linear interpolation
                     k1, k2 = valid_k[idx-1], valid_k[idx]
                     cop1, cop2 = valid_cop[idx-1], valid_cop[idx]
-                    k_target = k1 + (3.6 - cop1) * (k2 - k1) / (cop2 - cop1)
+                    k_target = k1 + (4.67 - cop1) * (k2 - k1) / (cop2 - cop1)
                     k_required[q_target] = k_target
                     
                     # Mark on both plots
@@ -303,7 +303,7 @@ def plot_performance_vs_k(power_levels=[1960, 2335, 3120], vf=VF_FIXED,
                     if tf_target is not None:
                         ax1.plot(k_target, tf_target, 'o', color=colors[i], 
                                markersize=10, markeredgecolor='black', markeredgewidth=2)
-                        ax2.plot(k_target, 3.6, 'o', color=colors[i], 
+                        ax2.plot(k_target, 4.67, 'o', color=colors[i], 
                                markersize=10, markeredgecolor='black', markeredgewidth=2)
     
     # Title
@@ -335,13 +335,13 @@ def main():
     # Plot 2: Performance vs K for three power levels
     print("\n2. Generating performance vs K plot...")
     power_levels = [1960, 2335, 3120]  # W
-    fig2, _, k_required = plot_performance_vs_k(power_levels=power_levels, k_range=(30, 100))
+    fig2, _, k_required = plot_performance_vs_k(power_levels=power_levels, k_range=(30, 130))
     fig2.savefig('assets/performance_vs_k.png', dpi=150, bbox_inches='tight')
     print("   Saved: assets/performance_vs_k.png")
     
     # Print required K values
     print("\n" + "=" * 60)
-    print("REQUIRED RADIATOR CONSTANTS FOR COP = 3.6")
+    print("REQUIRED RADIATOR CONSTANTS FOR COP = 4.67")
     print("=" * 60)
     print(f"Current K: {K_CURRENT:.1f} W/K^{N_RAD}")
     print()
@@ -367,7 +367,7 @@ def main():
         print("=" * 60)
         print("RECOMMENDATION FOR CONCLUSION:")
         print("=" * 60)
-        print(f"To handle peak load of 3.12 kW at COP = 3.6:")
+        print(f"To handle peak load of 3.12 kW at COP = 4.67:")
         print(f"  Required K ≈ {k_peak:.0f} W/K^{N_RAD}")
         print(f"  This is approximately {factor_peak:.1f}× current capacity")
         print("=" * 60)
