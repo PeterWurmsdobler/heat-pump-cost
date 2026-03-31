@@ -23,7 +23,7 @@ TI = 19.0  # Indoor temperature [°C]
 TO = 5.0  # Outdoor temperature [°C]
 
 # Radiator properties
-K_CURRENT = 35.9  # Current radiator constant [W/K^1.2]
+K_CURRENT = 44.9  # Current radiator constant [W/K^1.2]
 N_RAD = 1.2  # Radiator exponent
 
 # Operating parameters
@@ -163,15 +163,21 @@ def plot_performance_vs_power(k_rad=K_CURRENT, vf=VF_FIXED,
     
     # Mark the three key power levels on temperature axis
     key_powers = [1.96, 2.335, 3.12]
-    for qk in key_powers:
+    key_labels = ['S1: 1.96 kW\n(+log burner)', 'S2: 2.34 kW\n(no log burner)', 'S3: 3.12 kW\n(peak)']
+    key_colors = ['steelblue', 'darkorange', 'firebrick']
+    for qk, label, col in zip(key_powers, key_labels, key_colors):
         if power_range[0]/1000 <= qk <= power_range[1]/1000:
+            ax1.axvline(x=qk, color=col, linewidth=0.9, linestyle='--', alpha=0.7)
             idx = np.argmin(np.abs(powers_kw - qk))
             if not np.isnan(flow_temps[idx]):
                 ax1.plot(qk, flow_temps[idx], 'o', color=color1, markersize=8)
-                ax1.annotate(f'{flow_temps[idx]:.0f}°C', 
-                           xy=(qk, flow_temps[idx]), 
-                           xytext=(10, 10), textcoords='offset points',
+                ax1.annotate(f'{flow_temps[idx]:.0f}°C',
+                           xy=(qk, flow_temps[idx]),
+                           xytext=(6, 6), textcoords='offset points',
                            fontsize=9, color=color1)
+            # Annotate label near the top of the plot
+            ax1.text(qk + 0.04, ax1.get_ylim()[0] + (ax1.get_ylim()[1] - ax1.get_ylim()[0]) * 0.97,
+                     label, fontsize=7.5, color=col, va='top', ha='left', linespacing=1.3)
     
     # Create second y-axis on top for COP
     ax2 = ax1.twinx()
@@ -188,7 +194,7 @@ def plot_performance_vs_power(k_rad=K_CURRENT, vf=VF_FIXED,
     ax2.set_ylim([1.5, 6.5])
     
     # Mark the three key power levels on COP axis
-    for qk in key_powers:
+    for qk, col in zip(key_powers, key_colors):
         if power_range[0]/1000 <= qk <= power_range[1]/1000:
             idx = np.argmin(np.abs(powers_kw - qk))
             if not np.isnan(cops[idx]):
@@ -244,13 +250,21 @@ def plot_performance_vs_k(power_levels=[1960, 2335, 3120], vf=VF_FIXED,
     ax2.set_ylabel('COP', fontsize=12, color='black')
     ax2.set_ylim([1.5, 7.0])
     
-    # Plot break-even line
+    # Plot break-even lines
     ax2.axhline(y=4.67, color='black', linestyle='--', linewidth=2, 
                 label='Target COP = 4.67', alpha=0.7)
+    ax1.axhline(y=37.1, color='black', linestyle='--', linewidth=1.2,
+                alpha=0.5, label='T$_f$ = 37.1°C (break-even)')
+
+    # Vertical line at current K
+    ax1.axvline(x=K_CURRENT, color='grey', linewidth=1.2, linestyle='-', alpha=0.8)
+    current_k_annotation = (K_CURRENT, 'grey', f'Current\nK={K_CURRENT}')
     
     lines_temp = []
     lines_cop = []
-    
+    scenario_labels = ['S1: 1.96 kW\n(+log burner)', 'S2: 2.34 kW\n(no log burner)', 'S3: 3.12 kW\n(peak)']
+    vline_annotations = []  # collect (k_target, color, label) for drawing after loop
+
     for i, q_target in enumerate(power_levels):
         print(f"Calculating performance vs K for Q = {q_target/1000:.2f} kW...")
         
@@ -305,6 +319,20 @@ def plot_performance_vs_k(power_levels=[1960, 2335, 3120], vf=VF_FIXED,
                                markersize=10, markeredgecolor='black', markeredgewidth=2)
                         ax2.plot(k_target, 4.67, 'o', color=colors[i], 
                                markersize=10, markeredgecolor='black', markeredgewidth=2)
+                        # Vertical line at break-even K — annotation deferred until after loop
+                        ax1.axvline(x=k_target, color=colors[i], linewidth=0.9, linestyle=':', alpha=0.7)
+                        vline_annotations.append((k_target, colors[i], scenario_labels[i]))
+
+    # Draw vertical-line annotations now that ylim is finalised
+    y_top = ax1.get_ylim()[0] + (ax1.get_ylim()[1] - ax1.get_ylim()[0]) * 0.97
+    # Current K annotation
+    k_ann, col, lbl = current_k_annotation
+    ax1.text(k_ann + 0.8, y_top, lbl,
+             fontsize=7.5, color=col, va='top', ha='left', linespacing=1.3)
+    for k_ann, col, lbl in vline_annotations:
+        ax1.text(k_ann + 0.8, y_top,
+                 f'{lbl}\nK≈{k_ann:.0f}',
+                 fontsize=7.5, color=col, va='top', ha='left', linespacing=1.3)
     
     # Title
     fig.suptitle(f'Flow Temperature and COP vs Radiator Constant\n(V$_f$ = {vf*60:.0f} l/min, T$_o$ = {TO:.0f}°C)', 
