@@ -119,6 +119,10 @@ With the government grant, runtime costs dominate the total lifecycle cost (89%)
 
 For a 25-year ownership horizon, the analysis reveals that a balanced "Heat Pump First with Sensible Insulation" approach is optimal. The efficiency of modern heat pumps means that moderate insulation investment (£350-£600) combined with a properly-sized heat pump provides the best economic outcome, whether considering capital costs alone or including 25 years of operation.
 
+Next, what are the impediments to their adoption?
+
+[Impediments to UK Heat Pump Adoption and Possible Solutions](https://peter-wurmsdobler.medium.com/impediments-to-uk-heat-pump-adoption-and-possible-solutions-7d3812c091e4)
+
 ---
 
 ## Post-Scriptum
