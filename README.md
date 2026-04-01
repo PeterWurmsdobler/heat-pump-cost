@@ -1,147 +1,158 @@
 # Heat Pump Cost Analysis
 
-Analysis tool for optimising the balance between heat pump and insulation investments.
+A collection of quantitative analyses — each backed by Python models — exploring the economics and practicalities of installing an air-source heat pump in a 1930s UK semi-detached house. Three articles are supported:
+
+1. **[Considerations for the Fabric First vs Heat Pump First Debate](considerations.md)** — capital and lifecycle cost optimisation across insulation and heat pump options.
+2. **[Impediments to UK Heat Pump Adoption and Possible Solutions](impediments.md)** — qualitative analysis of capital cost, space requirements, and the spark gap.
+3. **[How the Spark Gap Drives the Radiator Upgrades for a Heat Pump Installation](operations-static.md)** — steady-state thermal modelling of flow temperature, COP, and required radiator capacity.
 
 ## Project Structure
 
 ```
 heat-pump-cost/
 ├── data/
-│   ├── heat-pump-ratings.csv      # Heat pump specifications and costs
-│   └── home-improvements.csv       # Insulation improvement options
+│   ├── heat-pump-ratings.csv        # Heat pump specifications and costs
+│   └── home-improvements.csv        # Insulation improvement options
 ├── src/
 │   └── heat_pump_cost/
 │       ├── __init__.py
-│       ├── __main__.py             # Module entry point
-│       ├── cli.py                  # Command-line interface
-│       ├── cost_calculator.py      # CostCalculator class
-│       ├── plotter.py              # Plotting utilities
-│       └── plot_cost_analysis.py   # Main analysis script
-├── article.md                      # Detailed analysis article
-└── pyproject.toml                  # Project configuration
+│       ├── __main__.py              # Module entry point
+│       ├── cli.py                   # CLI for considerations analysis
+│       ├── cost_calculator.py       # Capital + runtime cost optimisation
+│       ├── plot_cost_analysis.py    # Generates considerations plots
+│       ├── plotter.py               # Shared plotting utilities
+│       ├── operations_model.py      # Steady-state heat flow model + contour plots
+│       └── radiator_analysis.py     # COP vs power/K plots
+├── assets/                          # Generated plots (committed)
+├── considerations.md
+├── impediments.md
+├── operations-static.md
+└── pyproject.toml
 ```
 
 ## Installation
 
 ```bash
-# Install the package in editable mode
 pip install -e .
 ```
 
-## Usage
+Requires Python ≥ 3.8 with `numpy`, `scipy`, and `matplotlib`.
 
-### Run with default settings
+---
+
+## Article 1: Considerations for the Fabric First vs Heat Pump First Debate
+
+**File:** [considerations.md](considerations.md)
+
+Explores the capital and 25-year lifecycle cost trade-off between heat pump capacity and home insulation improvements for a 1930s Cambridge semi-detached house (initial heat loss 9 kW / ~25,000 kWh/year).
+
+### Generate the plots
 
 ```bash
-# Using the installed console script
+# Run with defaults (9 kW initial heat loss, 15p/kWh electricity)
 heat-pump-cost
 
-# Or as a Python module
+# Or as a module
 python -m heat_pump_cost
 ```
 
-### CLI Options
+This saves four plots to the current directory:
+
+| File | Description |
+|---|---|
+| `heat_pump_1_no_grant_capital_only.png` | Capital cost only, no grant |
+| `heat_pump_2_with_grant_capital_only.png` | Capital cost only, with £7,500 BUS grant |
+| `heat_pump_4_no_grant_with_runtime.png` | Capital + 25-year runtime, no grant |
+| `heat_pump_5_with_grant_with_runtime.png` | Capital + 25-year runtime, with £7,500 grant |
+
+### Key parameters
+
+| Parameter | Flag | Default | Note |
+|---|---|---|---|
+| Initial heat loss | `--initial-heat-loss` | `9.0` kW | Set to your property's design heat loss |
+| Electricity rate | `--electricity-rate` | `0.15` | £/kWh; update to current price cap |
+| Heat pump data | `--heat-pumps` | `data/heat-pump-ratings.csv` | Edit CSV to add/remove models |
+| Improvements data | `--improvements` | `data/home-improvements.csv` | Edit CSV to adjust costs |
+| Output directory | `--output-dir` | current dir | |
 
 ```bash
-# Show help
+# Example: current energy prices, specific heat loss
+heat-pump-cost --initial-heat-loss 8.0 --electricity-rate 0.2769
+
+# Full help
 heat-pump-cost --help
-
-# Specify custom initial heat loss
-heat-pump-cost --initial-heat-loss 20000
-
-# Use custom data files
-heat-pump-cost \
-  --heat-pumps data/my-heat-pumps.csv \
-  --improvements data/my-improvements.csv
-
-# Specify output directory
-heat-pump-cost --output-dir results/
-
-# Custom electricity rate (20p/kWh)
-heat-pump-cost --electricity-rate 0.20
 ```
 
-## Output
+### Data files
 
-The analysis generates 4 plots:
+**`data/heat-pump-ratings.csv`** — one row per heat pump model:  
+`capacity_kw`, `property_type`, `heat_demand_kwh`, `electricity_use_kwh`, `cost_gbp`
 
-### Capital Costs Only (Installation costs)
-1. `heat_pump_1_no_grant_capital_only.png` - No grant scenario
-2. `heat_pump_2_with_grant_capital_only.png` - With £7,500 grant
+**`data/home-improvements.csv`** — one row per improvement option:  
+`description`, `cost_gbp`, `heat_loss_reduction_watt` (at design conditions: 21°C inside, 2°C outside)
 
-### Total Lifecycle Costs (Capital + Runtime, 25 years)
-3. `heat_pump_4_no_grant_with_runtime.png` - No grant + 25 years runtime
-4. `heat_pump_5_with_grant_with_runtime.png` - With £7,500 grant + 25 years runtime
+---
 
-## Data Files
+## Article 2: Impediments to UK Heat Pump Adoption and Possible Solutions
 
-### heat-pump-ratings.csv
+**File:** [impediments.md](impediments.md)
 
-CSV file with heat pump specifications:
-- `capacity_kw`: Heat pump capacity in kW
-- `property_type`: Property size category
-- `heat_demand_kwh`: Typical annual heat demand in kWh
-- `electricity_use_kwh`: Estimated annual electricity consumption in kWh
-- `cost_gbp`: Installation cost in £
+A qualitative analysis of the three main barriers — capital cost, space requirements, and the spark gap — and potential paths to making heat pump installations comparable in cost and complexity to a gas boiler replacement. No additional Python scripts; the article builds on the findings of Article 1 and refers forward to Article 3.
 
-### home-improvements.csv
+---
 
-CSV file with insulation improvement options:
-- `description`: Name of the improvement
-- `cost_gbp`: Cost in £
-- `heat_loss_reduction_watt`: Heat loss reduction in Watts at design conditions (21°C inside, 2°C outside)
+## Article 3: How the Spark Gap Drives the Radiator Upgrades for a Heat Pump Installation
 
-## Key Findings
+**File:** [operations-static.md](operations-static.md)
 
-The analysis reveals:
+Uses a steady-state lumped-mass thermal model, empirically calibrated from January 2026 bills (K = 44.9 W/K^1.2), to show how the spark gap (currently 4.67) sets the minimum COP threshold and thereby the required flow temperature and radiator capacity for three heating load scenarios.
 
-1. **Without runtime costs**: Optimal strategy is minimal insulation (loft and bay window) reducing heat loss to 13,333 kWh/year for £350.
-   - No grant: £13,223 total
-   - With £7,500 grant: £5,723 total
+### Generate the plots
 
-2. **With runtime costs over 25 years**: Optimal point shifts to 12,901 kWh/year (£928 insulation), making additional insulation investment economically beneficial.
-   - No grant: £28,523 total
-   - With £7,500 grant: £21,023 total
+**Contour plot** (`assets/operations_contour.png`) — constant heating power curves over flow rate and flow temperature:
 
-3. **Runtime costs dominate**: Over a 25-year lifecycle, runtime costs represent 52-71% of total costs, fundamentally changing the optimisation equation.
-
-4. **Government grant impact**: The £7,500 grant significantly reduces upfront costs (from £13,223 to £5,723) but doesn't change the optimal insulation level when considering capital costs alone.
-
-5. **Empirical conversion factor**: Heat loss reduction in Watts (at design conditions) is converted to annual kWh using an empirical factor of 2.78, derived from real-world data (9,000 W design → 25,000 kWh/year actual).
-
-## Development
-
-### Code Structure
-
-- **CostCalculator**: Core calculation engine that reads data from CSV files and computes optimal costs
-- **CostPlotter**: Plotting utilities for visualizing results
-- **CLI**: Command-line interface for running analyses with custom parameters
-
-### Extending the Analysis
-
-To add new scenarios:
-
-```python
-from cost_calculator import CostCalculator
-from plotter import CostPlotter
-
-calculator = CostCalculator(
-    initial_heat_loss=25000,
-    heat_pumps_csv="data/heat-pump-ratings.csv",
-    improvements_csv="data/home-improvements.csv"
-)
-
-result = calculator.calculate_total_cost(
-    num_heat_pumps=3,
-    heat_pump_grants=[7500, 5000, 0],
-    runtime_years=75,
-    electricity_rate=0.20
-)
-
-plotter = CostPlotter(result)
-plotter.save_plot("custom_analysis.png")
+```bash
+heat-pump-operations
+# or
+python -m heat_pump_cost.operations_model
 ```
 
-## License
+**Performance vs power** (`assets/performance_vs_power.png`) and **performance vs K** (`assets/performance_vs_k.png`):
 
-See project documentation for details.
+```bash
+python -m heat_pump_cost.radiator_analysis
+```
+
+### Key parameters
+
+All constants are defined at the top of each module and can be edited directly:
+
+**`src/heat_pump_cost/operations_model.py`**
+
+| Constant | Default | Description |
+|---|---|---|
+| `HTC` | `244.0` W/K | House heat transfer coefficient |
+| `TI` | `19.0` °C | Indoor temperature |
+| `TO` | `5.0` °C | Outdoor temperature (design month) |
+| `K_RAD` | `44.9` W/K^1.2 | Empirical radiator constant |
+| `N_RAD` | `1.2` | Radiator exponent |
+| `Q_TARGET` | `1960.0` W | Average radiator power (from bills) |
+
+**`src/heat_pump_cost/radiator_analysis.py`**
+
+| Constant | Default | Description |
+|---|---|---|
+| `K_CURRENT` | `44.9` W/K^1.2 | Current radiator constant |
+| `COP_EFFICIENCY` | `0.55` | Carnot efficiency factor (η) |
+| `T_LIFT` | `5.0` K | Temperature lift: radiator flow → HP condenser |
+| `VF_FIXED` | `20 l/min` | Fixed flow rate assumed at high-flow operation |
+
+To model different energy prices, recalculate the spark gap (`p_electricity / p_gas`) and update the break-even COP annotations in `plot_performance_vs_k()`.
+
+### Printed output
+
+Both scripts print a summary to stdout — flow temperatures, COPs, and required K values for each scenario — which can be redirected to a file:
+
+```bash
+python -m heat_pump_cost.radiator_analysis > results.txt
+```

@@ -189,3 +189,5 @@ These figures assume achievement of manufacturing economies of scale and adoptio
 Next, the spark gap and it's implication on capital and operational expenses as another impediment:
 
 [How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations](https://peter-wurmsdobler.medium.com/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd)
+
+*Analysis based on: 1930s semi-detached house, Code and methodology available at [github.com/PeterWurmsdobler/heat-pump-cost](https://github.com/PeterWurmsdobler/heat-pump-cost).*

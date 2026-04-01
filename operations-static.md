@@ -95,6 +95,7 @@ With the current K = 44.9, none of the three scenarios reach the required COP of
 
 For average heating loads the economics of switching are already marginal with current radiators, provided the gas connection is fully decommissioned and the standing charge saving is realised. Substantial upgrades are only required if the full peak design load is to be met economically, which would involve replacing most radiators and adding panels in key rooms, a significant cost and disruption. Should energy pricing shift, however (e.g. a move away from merit order based marginal pricing, or adding energy transition costs to gas rather than onto the electricity cost), the spark gap is expected to drop and the required upgrades would become less severe. A spark gap below roughly 3.3 would bring the break-even flow temperature up high enough that no radiator upgrade would be needed at all, hence removing yet another impediment for heat-pump adoption.
 
+*Analysis based on: 1930s semi-detached house, Code and methodology available at [github.com/PeterWurmsdobler/heat-pump-cost](https://github.com/PeterWurmsdobler/heat-pump-cost).*
 
 # References
 
