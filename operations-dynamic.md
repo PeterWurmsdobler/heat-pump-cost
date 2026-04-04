@@ -20,21 +20,23 @@ Q_r = K * ((T_f + T_r)/2 - T_i)^n<br>
 Q_l = h * (T_i - T_o)<br>
 C * dT_i/dt = Q_r - Q_l
 
-[How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations ](https://medium.com/@peter-wurmsdobler/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd) has identified the values of some parameters for the dynamic analysis: h = 244 W/K; K = 4.9 W/K^1.2, ρ = 1 kg/l and c_p = 4.18 kJ/kg/K, V_f is assumed to be constant at 20 l/s for this analysis; heat power is only modulated through the flow temperature. Also note, the heat balance for the radiator circuit (no losses in short pipework), is Q_h = Q_r. There is only one parameter missing: C, the house's thermal capacity.
+[How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations ](https://medium.com/@peter-wurmsdobler/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd) has identified the values of some parameters for the dynamic analysis: h = 244 W/K; K = 4.9 W/K^1.2, ρ = 1 kg/l and c_p = 4.18 kJ/kg/K, V_f is assumed to be constant at 20 l/s for this analysis; heat power is only modulated through the flow temperature only (which keeps the flow temperature as low as possible). Also note, the heat balance for the radiator circuit (no losses in short pipework), is Q_h = Q_r. There is only one parameter missing: C, the house's thermal capacity.
 
 ## Model Parameter Identification
 
-Modelling a thermal system as a lumped mass at a certain heat capacity C and an estiamted heat loss coefficient lends itself to a very simple experiment: let the system cool down on its own over night through its thermal loss and without any added heat, work out the time constant, then estimate the thermal mass C. Since the outside temperature is not quite constant, however, the system parameter identification gets a git more complicated, but not too much. Given the model above, with no heating power, the equations degenerate to:
+Modelling a thermal system as a lumped mass with a certain heat capacity C and an estiamted heat loss coefficient h lends itself to a simplification: without any radiator heat input the evolution of the indoor temperature will follow a simplified equation:
 
 C * dT_i/dt = -h * (T_i - T_o)
 
-If we can measure the inside and outdoor temperature once the heating has stopped late in the evening, we can plot those in a graph, and employ some system identification mathematics to work out the parameter C of the dynamic system. It works out to be C = XXX Js/K. The following plot shows the measure outside temperature, measured inside temperature and estimated inside temperature based on the model.
+In practical terms, once the heating has stopped late at night, the house will cool down through its thermal losses. We can record the resulting indoor temperature, e.g. using a Raspberry PicoPi, then subject the data to some system parameter identification tools, and plot the results as shown below. Over an experimental period from 1am to 6am, the outdoor temperature was relatively constant at about 7C; this yields C = 2.01 MJ/K and the associated time constant τ = C/h = 8242 s = 2.289 h. 
 
-GRAPH: plot of T_o, T_i and T_i_est.
+![Contour Plot](assets/temperature_plot.png)
+*Figure: measured inside temperature and estimated inside temperature based on the model from 1am to 6am*
+
 
 # Dynamic Heating Simulation
 
-Since we now have got a parameterised dynamic model, it should be possible to work out the heating requirments, and eventually the cost of heating. For this story, let's assume the January 2026 conditions with an average outdoor temperature T_o = 5°C. Without any other heat sources, the the heating requirement in a steady state would be XXX W to maintain an average of 19°C indoors, i.e. Q_l = Q_r = 244 × 14 = **3.42 kW**, or ~82kWh/day, to give a ballpark figure for the heating requirements. But this story is about dynamics.
+Since we now have got a parameterised dynamic model, it should be possible to work out the heating requirments, and eventually the cost of heating. For this story, let's assume the January 2026 conditions with an average outdoor temperature T_o = 5°C. Without any other heat sources, the the heating requirement in a steady state would be Q_l = Q_r = 244 × 14 = **3.42 kW** to maintain an average of 19°C indoors, or ~82kWh/day, to give a ballpark figure for the heating requirements. 
 
 ## Gas Boiler Space Heating
 
