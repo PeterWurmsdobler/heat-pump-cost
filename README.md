@@ -1,10 +1,11 @@
 # Heat Pump Cost Analysis
 
-A collection of quantitative analyses — each backed by Python models — exploring the economics and practicalities of installing an air-source heat pump in a 1930s UK semi-detached house. Three articles are supported:
+A collection of quantitative analyses — each backed by Python models — exploring the economics and practicalities of installing an air-source heat pump in a 1930s UK semi-detached house. Four articles are supported:
 
 1. **[Considerations for the Fabric First vs Heat Pump First Debate](considerations.md)** — capital and lifecycle cost optimisation across insulation and heat pump options.
 2. **[Impediments to UK Heat Pump Adoption and Possible Solutions](impediments.md)** — qualitative analysis of capital cost, space requirements, and the spark gap.
 3. **[How the Spark Gap Drives the Radiator Upgrades for a Heat Pump Installation](operations-static.md)** — steady-state thermal modelling of flow temperature, COP, and required radiator capacity.
+4. **[Quantitative Analysis of Dynamic Heat Pump Operation for Domestic Heating](operations-dynamic.md)** — dynamic thermal modelling showing how control strategy impacts heat pump economics, comparing gas boiler, simple thermostat, smooth continuous, and tariff-optimized operation.
 
 ## Project Structure
 
@@ -16,17 +17,23 @@ heat-pump-cost/
 ├── src/
 │   └── heat_pump_cost/
 │       ├── __init__.py
-│       ├── __main__.py              # Module entry point
-│       ├── cli.py                   # CLI for considerations analysis
-│       ├── cost_calculator.py       # Capital + runtime cost optimisation
-│       ├── plot_cost_analysis.py    # Generates considerations plots
-│       ├── plotter.py               # Shared plotting utilities
-│       ├── operations_model.py      # Steady-state heat flow model + contour plots
-│       └── radiator_analysis.py     # COP vs power/K plots
-├── assets/                          # Generated plots (committed)
+│       ├── __main__.py                      # Module entry point
+│       ├── cli.py                           # CLI for considerations analysis
+│       ├── cost_calculator.py               # Capital + runtime cost optimisation
+│       ├── plot_cost_analysis.py            # Generates considerations plots
+│       ├── plotter.py                       # Shared plotting utilities
+│       ├── operations_model.py              # Steady-state heat flow model + contour plots
+│       ├── radiator_analysis.py             # COP vs power/K plots
+│       ├── dynamic_thermal_model.py         # First-order dynamic house model
+│       ├── identify_thermal_parameters.py   # Parameter identification from data
+│       ├── simulate_gas_boiler.py           # Gas boiler baseline simulation
+│       ├── simulate_smooth_heat_pump.py     # Continuous operation heat pump
+│       └── simulate_tariff_optimized.py     # Tariff-optimized heat pump control
+├── assets/                                  # Generated plots (committed)
 ├── considerations.md
 ├── impediments.md
 ├── operations-static.md
+├── operations-dynamic.md
 └── pyproject.toml
 ```
 
@@ -156,3 +163,119 @@ Both scripts print a summary to stdout — flow temperatures, COPs, and required
 ```bash
 python -m heat_pump_cost.radiator_analysis > results.txt
 ```
+
+
+---
+
+## Article 4: Quantitative Analysis of Dynamic Heat Pump Operation for Domestic Heating
+
+**File:** [operations-dynamic.md](operations-dynamic.md)
+
+Uses a first-order dynamic thermal model with parameters identified from recorded temperature data (C = 21.0 MJ/K, h = 142.6 W/K, τ = 40.8 h) to simulate four heating strategies for a January day (T_o = 5°C):
+
+1. **Gas boiler** — traditional on/off control with morning and evening warm-up periods
+2. **Simple thermostat heat pump** — mimics gas boiler operation, shows inefficiency of high flow temperatures
+3. **Smooth continuous heat pump** — optimized continuous operation with baseline heating, achieves 11% lower cost than gas
+4. **Tariff-optimized heat pump** — exploits Octopus Cosy dynamic pricing by pre-heating during cheap periods
+
+Demonstrates that control strategy is critical: same hardware ranges from 27% more expensive than gas (simple thermostat) to 11% cheaper (smooth continuous operation).
+
+### CLI Commands
+
+#### 1. Parameter Identification
+
+```bash
+heat-pump-identify
+```
+
+Generates `assets/temperature_plot.png` showing model fit to recorded temperature data from three experimental periods (two cool-down periods and one heating period). Identifies thermal parameters C, h, Q_b using MAP estimation.
+
+#### 2. Gas Boiler Simulation
+
+```bash
+heat-pump-gas-boiler
+```
+
+Simulates traditional gas boiler operation with schedule:
+- 22:00–06:00: OFF (house cools)
+- 06:00–09:00: 19°C comfort
+- 09:00–17:00: 15°C reduced (away)
+- 17:00–22:00: 19°C comfort
+
+**Results:** 36.6 kWh/day heat, £3.19/day total cost (gas + standing charges)
+
+**Outputs:**
+- `assets/gas_boiler_simulation.png` — temperature and power profiles
+- `assets/heat_pump_cop_simulation.png` — equivalent heat pump COP analysis
+
+#### 3. Smooth Continuous Heat Pump
+
+```bash
+heat-pump-smooth
+```
+
+Simulates optimized continuous operation:
+- Baseline 800W heating during night/away periods
+- Maintains 17–19°C throughout
+- Max flow temperature 45°C
+- Predictive control with 3-hour lookahead
+
+**Results:** 36.7 kWh/day heat, 8.3 kWh/day electricity, SCOP 4.44, £2.84/day (11% cheaper than gas)
+
+**Outputs:**
+- `assets/smooth_heat_pump_operation.png` — temperature and power profiles
+- `assets/smooth_heat_pump_cop.png` — flow temperature and COP profiles
+
+#### 4. Tariff-Optimized Heat Pump
+
+```bash
+heat-pump-tariff
+```
+
+Simulates cost optimization for Octopus Cosy dynamic tariff:
+- Cheap periods (14.53p): aggressive pre-heating at up to 55°C
+- Peak period (51.68p): minimal heating, coast on stored energy
+- Day periods (33.28p): moderate operation
+
+**Results:** 41.3 kWh/day heat, 10.0 kWh/day electricity, SCOP 4.13, £3.06/day
+- Saves £0.26/day vs flat tariff (£39/year)
+- Still 4% cheaper than gas despite lower efficiency
+
+**Outputs:**
+- `assets/octopus_cosy_tariff.png` — tariff structure visualization
+- `assets/tariff_optimized_operation.png` — temperature and power profiles
+- `assets/tariff_optimized_cop.png` — flow temperature and COP profiles
+
+### Key Parameters
+
+All identified from April 2026 experiments:
+
+| Parameter | Value | Description |
+|---|---|---|
+| `C` | 21.0 MJ/K | House thermal capacity |
+| `h` | 142.6 W/K | Heat transfer coefficient |
+| `Q_b` | 500 W | Background heat (appliances, occupancy) |
+| `τ` | 40.8 hours | Thermal time constant (C/h) |
+| `K` | 44.9 W/K^1.2 | Radiator constant |
+| `n` | 1.2 | Radiator exponent |
+
+### Energy Prices (January 2026)
+
+- **Gas:** 5.93p/kWh + 35.09p/day standing charge
+- **Electricity (flat):** 27.69p/kWh + 54.75p/day standing charge
+- **Octopus Cosy:** 14.53p (cheap), 33.28p (day), 51.68p (peak 16:00–19:00)
+
+All cost comparisons include electricity standing charges for all scenarios, providing fair comparison.
+
+---
+
+## Summary of CLI Tools
+
+| Command | Article | Purpose |
+|---|---|---|
+| `heat-pump-cost` | 1 | Capital and lifecycle cost optimization plots |
+| `heat-pump-operations` | 3 | Steady-state operations contour plot |
+| `heat-pump-identify` | 4 | Thermal parameter identification plot |
+| `heat-pump-gas-boiler` | 4 | Gas boiler baseline simulation |
+| `heat-pump-smooth` | 4 | Smooth continuous heat pump operation |
+| `heat-pump-tariff` | 4 | Tariff-optimized heat pump operation |

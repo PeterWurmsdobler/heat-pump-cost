@@ -23,3 +23,8 @@ dev = [
 [project.scripts]
 heat-pump-cost = "heat_pump_cost.cli:main"
 heat-pump-operations = "heat_pump_cost.operations_model:run_operations_analysis"
+heat-pump-temperatures = "heat_pump_cost.plot_temperatures:main"
+heat-pump-identify = "heat_pump_cost.identify_thermal_parameters:main"
+heat-pump-gas-boiler = "heat_pump_cost.simulate_gas_boiler:main"
+heat-pump-smooth = "heat_pump_cost.simulate_smooth_heat_pump:main"
+heat-pump-tariff = "heat_pump_cost.simulate_tariff_optimized:main"

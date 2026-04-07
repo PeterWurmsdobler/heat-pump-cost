@@ -25,24 +25,26 @@ from scipy.optimize import fsolve, brentq
 @dataclass
 class ThermalSystemParameters:
     """Parameters for the dynamic thermal model."""
-    
+
     # Water properties
-    rho: float = 1.0  # Water density [kg/l]
-    cp: float = 4180.0  # Specific heat capacity of water [J/kg/K]
-    
-    # House thermal properties
-    h: float = 244.0  # Heat Transfer Coefficient [W/K]
-    C: float = 54.9e6  # Thermal capacity [J/K] - CORRECTED from 2.01e6 via proper curve fitting
-    
+    rho: float = 1.0       # Water density [kg/l]
+    cp: float = 4180.0     # Specific heat capacity of water [J/kg/K]
+
+    # House thermal properties – identified from April 2026 decay/heating experiments
+    # (Q_r = 4 kW for Period 3; h_sigma = 500 allowing data to constrain h freely)
+    h: float = 142.6       # Heat Transfer Coefficient [W/K]
+    C: float = 21.0e6      # Thermal capacity [J/K]  (21.0 MJ/K)
+    Q_b: float = 500.0     # Background heat – appliances / occupancy [W]
+
     # Radiator properties
-    K: float = 44.9  # Radiator constant [W/K^n]
-    n: float = 1.2  # Radiator exponent
-    
+    K: float = 44.9        # Radiator constant [W/K^n]
+    n: float = 1.2         # Radiator exponent
+
     # Flow rate
     V_f: float = 20.0 / 60.0  # Flow rate [l/s] (20 l/min)
-    
-    # Environmental
-    T_o: float = 7.0  # Outdoor temperature [°C] - April measurement conditions
+
+    # Environmental – January 2026 average for simulations
+    T_o: float = 5.0       # Outdoor temperature [°C]
 
 
 class DynamicThermalModel:
@@ -177,8 +179,8 @@ class DynamicThermalModel:
                 Q_r = self.radiator_power(T_f, T_r, T_i)
         
         Q_l = self.heat_loss(T_i)
-        dT_i_dt = (Q_r - Q_l) / self.params.C
-        
+        dT_i_dt = (Q_r + self.params.Q_b - Q_l) / self.params.C
+
         return dT_i_dt
     
     def integrate(

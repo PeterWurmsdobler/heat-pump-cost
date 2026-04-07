@@ -1,308 +1,456 @@
+"""Simulate gas boiler space heating for a full 24-hour day.
+
+Heating schedule (starting at 22:00):
+  22:00 – 06:00  Heating OFF (house cools freely)
+  06:00 – 09:00  Setpoint T_s = 19 °C  (full power until reached, then feed-forward)
+  09:00 – 17:00  Setpoint T_s = 15 °C  (reduced / away setpoint)
+  17:00 – 22:00  Setpoint T_s = 19 °C  (evening warm-up)
+
+Model parameters (from April 2026 thermal identification):
+  C    = 21.0 MJ/K    thermal capacity
+  h    = 142.6 W/K    heat transfer coefficient
+  Q_b  = 500 W        background heat (appliances / occupancy)
+  τ    = C/h = 40.8 h time constant
+
+Simulation conditions:
+  T_o  = 5 °C         January 2026 average outdoor temperature
+  Q_max = 12 000 W    gas boiler maximum output
+  Boiler efficiency η = 0.95 (condensing)
+  Gas price = 5.93 p/kWh (Ofgem January 2026 price cap)
 """
-Simulate gas boiler heating with modulating controller following the profile:
-- Off 22h to 6h (house cools via: C*dT_i/dt = -h*(T_i - T_o))
-- Setpoint 19°C from 6h to 9h (full power up to setpoint, then feed-forward)
-- Setpoint 15°C from 9h to 17h (full power up to setpoint, then feed-forward)
-- Setpoint 19°C from 17h to 22h (full power up to setpoint, then feed-forward)
 
-Start at 22h with T_i = 19°C, run for 24 hours.
+from __future__ import annotations
 
-Model integrates piecewise from initial conditions using corrected parameters:
-  C = 54.9 MJ/K (from April 4, 2026 fitted decay curve with FIXED T0=T_o)
-  h = 244 W/K (from building thermal model)
-  τ = C/h = 62.50 h (time constant, fitted correctly)
-  T_o = 7°C (April outdoor temperature during measurement)
+from itertools import chain
+from pathlib import Path
+from typing import Iterable
 
-CRITICAL FIX: The thermal capacity C was corrected from 2.01 MJ/K to 54.9 MJ/K
-by properly constraining the curve fit to T0 = T_o. The original fit allowed T0
-to float to 19.6°C (intermediate value in the measurement window), leading to
-a 27× underestimation of the house's actual thermal mass.
-"""
-
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 from heat_pump_cost.dynamic_thermal_model import DynamicThermalModel, ThermalSystemParameters
+from heat_pump_cost.radiator_analysis import cop_estimate
+
+# ---------------------------------------------------------------------------
+# Simulation constants
+# ---------------------------------------------------------------------------
+
+GAS_PRICE_PER_KWH = 5.93 / 100.0   # £/kWh  (5.93 p/kWh)
+BOILER_EFFICIENCY = 0.95             # condensing gas boiler
+GAS_STANDING_CHARGE = 0.3509        # £/day
+
+# ---------------------------------------------------------------------------
+# Schedule / controller
+# ---------------------------------------------------------------------------
+
+# Heating schedule: (start_hour, end_hour, setpoint_°C)
+# Indexed relative to a day that begins at 22:00 (t=0 → 22:00).
+SCHEDULE = [
+    (0,   8,  None),   # 22:00 – 06:00  OFF
+    (8,  11,  19.0),   # 06:00 – 09:00  T_s = 19 °C
+    (11, 19,  15.0),   # 09:00 – 17:00  T_s = 15 °C  (away)
+    (19, 24,  19.0),   # 17:00 – 22:00  T_s = 19 °C
+]
+
+# Clock labels corresponding to the schedule boundaries (for axis ticks)
+TICK_HOURS = [0, 8, 11, 19, 24]
+TICK_LABELS = ["22:00", "06:00", "09:00", "17:00", "22:00"]
 
 
-def get_heating_mode(t):
-    """
-    Determine heating mode and setpoint at time t.
-    
-    Args:
-        t: Current time [s] (0 = 22h starting day)
-    
-    Returns:
-        Tuple of (heating_on, setpoint_temp) where:
-          heating_on: bool, True if heating should be active
-          setpoint_temp: float, target temperature [°C]
-    """
-    # Define schedule (times in seconds from 22h start)
-    t_6h = 8 * 3600      # 28800 s
-    t_9h = 11 * 3600     # 39600 s
-    t_17h = 19 * 3600    # 68400 s
-    t_22h = 24 * 3600    # 86400 s
-    
-    if t < t_6h or t >= t_22h:
-        # 22h to 6h: heating OFF
-        return False, None
-    elif t_6h <= t < t_9h:
-        # 6h to 9h: T_s = 19°C
-        return True, 19.0
-    elif t_9h <= t < t_17h:
-        # 9h to 17h: T_s = 15°C
-        return True, 15.0
-    else:  # t_17h <= t < t_22h
-        # 17h to 22h: T_s = 19°C
-        return True, 19.0
+def _setpoint(t_hours: float) -> float | None:
+    """Return the active setpoint [°C] at elapsed time *t_hours*, or None if off."""
+    for start, end, setpoint in SCHEDULE:
+        if start <= t_hours < end:
+            return setpoint
+    return SCHEDULE[-1][2]
 
 
-def modulating_controller(t, T_i, T_s, T_o=7.0, h=244.0, Q_max=6000.0):
-    """
-    Modulating controller: full power until setpoint, then feed-forward to maintain.
-    
-    Args:
-        t: Current time [s] (unused, for consistency)
-        T_i: Current indoor temperature [°C]
-        T_s: Setpoint temperature [°C] (or None if heating off)
-        T_o: Outdoor temperature [°C]
-        h: Heat transfer coefficient [W/K]
-        Q_max: Maximum heating power [W]
-    
-    Returns:
-        Heating power [W]
+def _controller(T_i: float, T_s: float | None, h: float, T_o: float, Q_max: float) -> float:
+    """Bang-bang + feed-forward boiler controller.
+
+    - Heating OFF  → 0 W
+    - T_i < T_s    → Q_max  (full power)
+    - T_i ≥ T_s    → h * (T_s - T_o)  (feed-forward to hold setpoint)
     """
     if T_s is None:
-        # Heating is off
         return 0.0
-    
-    # Modulating control: full power until setpoint, then feed-forward to maintain
     if T_i < T_s:
-        # Below setpoint: apply full power
         return Q_max
-    else:
-        # At or above setpoint: apply feed-forward power to maintain
-        # Q_h = h * (T_s - T_o)
-        Q_ff = h * (T_s - T_o)
-        return max(0.0, Q_ff)  # Ensure non-negative
+    return max(0.0, h * (T_s - T_o))
 
 
-def simulate_gas_boiler():
+# ---------------------------------------------------------------------------
+# Core simulation
+# ---------------------------------------------------------------------------
+
+
+def simulate_gas_boiler(
+    T_o: float = 5.0,
+    Q_max: float = 12_000.0,
+    T_i_0: float = 19.0,
+    dt_s: float = 60.0,
+) -> dict:
+    """Simulate one day of gas boiler space heating.
+
+    Uses a first-order Euler loop (dt=60 s ≪ τ=44 h) driven by the bang-bang
+    plus feed-forward controller.  At each step it solves for the flow
+    temperature T_f required to deliver the commanded power, then integrates:
+
+        C · dT_i/dt = Q_r + Q_b − h · (T_i − T_o)
+
+    Args:
+        T_o: Constant outdoor temperature [°C].
+        Q_max: Boiler maximum output [W].
+        T_i_0: Indoor temperature at t=0 (22:00) [°C].
+        dt_s: Euler time step [s].
+
+    Returns:
+        Dictionary with arrays:
+          ``t_h``       – time in hours from 22:00
+          ``T_i``       – indoor temperature [°C]
+          ``T_s``       – setpoint temperature [°C or NaN when off]
+          ``T_f``       – radiator flow temperature [°C]
+          ``Q_h``       – commanded heating power [W]
+          ``Q_r``       – actual radiator output [W]
+          ``Q_b``       – background heat [W] (constant)
+          ``Q_l``       – heat loss [W]
+          ``cop``       – equivalent HP COP at each T_f
+        and scalars:
+          ``total_heat_kwh``  – total heat delivered to radiators [kWh]
+          ``gas_kwh``         – gas consumed [kWh]
+          ``cost_gbp``        – gas cost excluding standing charge [£]
     """
-    Simulate a full day of gas boiler operation with modulating control.
-    
-    Integrates the differential equation piecewise from initial conditions:
-      dT_i/dt = (Q_r - Q_l) / C
-    
-    where:
-      Q_r = radiator power (depends on T_f, T_r, T_i)
-      Q_l = heat loss = h * (T_i - T_o)
-      C = thermal capacity = 2.01 MJ/K
-      h = heat transfer coefficient = 244 W/K
-      T_o = outdoor temperature = 7°C (April conditions from measurement)
-    """
-    
-    # Create model with parameters from fitted April 4, 2026 data
-    model = DynamicThermalModel()
-    
-    # Use the corrected parameters from the model
-    # T_o = 7°C (April measurement conditions)
-    # C = 54.9 MJ/K (corrected via proper curve fitting with fixed T0)
-    # h = 244 W/K
-    T_o = model.params.T_o  # Outdoor temperature [°C]
-    
-    # Radiators with K=44.9 can deliver max ~6 kW at 80°C flow
-    Q_boiler_max = 6000.0  # Realistic max for these radiators [W]
-    
-    # Start conditions
-    T_i_0 = 19.0  # Initial indoor temperature at 22h [°C]
-    t_start = 0.0
-    t_end = 24 * 3600  # 24 hours in seconds
-    dt = 120  # Integration step: 2 minutes
-    
-    # Time array
-    t_eval = np.arange(t_start, t_end + dt, dt)
-    
-    # Storage for results
-    T_i_vals = [T_i_0]
-    T_f_vals = []
-    Q_r_vals = []
-    Q_l_vals = []
-    Q_h_vals = []
-    t_vals = [t_start]
-    
-    # Integrate step by step from initial condition
-    T_i_current = T_i_0
-    failed_solves = 0
-    successful_solves = 0
-    
-    for i in range(1, len(t_eval)):
-        t_prev = t_vals[-1]
-        t_curr = t_eval[i]
-        dt_step = t_curr - t_prev
-        
-        # Step 1: Determine heating mode and setpoint at current time
-        heating_on, T_s = get_heating_mode(t_curr)
-        
-        # Step 2: Compute heating power from controller
-        Q_h = modulating_controller(t_curr, T_i_current, T_s, T_o=T_o, 
-                                     h=model.params.h, Q_max=Q_boiler_max)
-        Q_h_vals.append(Q_h)
-        
-        # Step 3: Compute radiator output Q_r and flow temperature T_f
-        if Q_h > 100.0:  # Only attempt solver if heating power is significant
-            # Solve for flow temperature needed to deliver Q_h
-            T_f = model.solve_flow_temp(Q_h, T_i_current, T_f_guess=T_i_current + 20.0)
-            if T_f is None or T_f < T_i_current or T_f > 150.0:
-                # If no valid solution, treat as zero radiator power
-                T_f = T_i_current
-                Q_r = 0.0
-                failed_solves += 1
-            else:
-                # Solve for return temperature from Q_h = Q_r balance
-                T_r = model.solve_return_temp(T_f, T_i_current)
-                if T_r is None or T_r < T_i_current or T_r >= T_f:
-                    Q_r = 0.0
-                    failed_solves += 1
-                else:
-                    Q_r = model.radiator_power(T_f, T_r, T_i_current)
-                    successful_solves += 1
+    params = ThermalSystemParameters(T_o=T_o)
+    model = DynamicThermalModel(params)
+
+    n_steps = int(round(24 * 3600 / dt_s)) + 1
+    t_s_arr = np.arange(n_steps) * dt_s
+    t_h_arr = t_s_arr / 3600.0
+
+    T_i_arr = np.empty(n_steps)
+    T_s_arr = np.full(n_steps, np.nan)
+    T_f_arr = np.empty(n_steps)
+    Q_h_arr = np.zeros(n_steps)
+    Q_r_arr = np.zeros(n_steps)
+    Q_l_arr = np.zeros(n_steps)
+    cop_arr = np.full(n_steps, np.nan)
+
+    T_i_arr[0] = T_i_0
+    T_f_arr[0] = T_i_0
+
+    T_i = T_i_0
+    for k in range(n_steps - 1):
+        t_h = t_h_arr[k]
+        T_s = _setpoint(t_h)
+        Q_h = _controller(T_i, T_s, params.h, T_o, Q_max)
+
+        # Solve for flow temperature and actual radiator output
+        if Q_h > 50.0:
+            T_f = model.solve_flow_temp(Q_h, T_i)
+            if T_f is None:
+                # Q_h exceeds radiator capacity; saturate at boiler max flow temperature
+                T_f = min(T_i + 55.0, 75.0)
+            T_r = model.solve_return_temp(T_f, T_i)
+            Q_r = model.radiator_power(T_f, T_r, T_i) if T_r is not None else 0.0
         else:
-            T_f = T_i_current
+            T_f = T_i
             Q_r = 0.0
-        
-        T_f_vals.append(T_f)
-        Q_r_vals.append(Q_r)
-        
-        # Step 4: Compute heat loss (always present)
-        Q_l = model.params.h * (T_i_current - T_o)
-        Q_l_vals.append(Q_l)
-        
-        # Step 5: Integrate ODE forward: dT_i/dt = (Q_r - Q_l) / C
-        dT_i_dt = (Q_r - Q_l) / model.params.C
-        T_i_next = T_i_current + dT_i_dt * dt_step
-        
-        # Store results
-        T_i_vals.append(T_i_next)
-        t_vals.append(t_curr)
-        T_i_current = T_i_next
-    
-    # Convert to arrays and time to hours for plotting
-    t_vals = np.array(t_vals)
-    T_i_vals = np.array(T_i_vals)
-    T_f_vals = np.array(T_f_vals)
-    Q_r_vals = np.array(Q_r_vals)
-    Q_l_vals = np.array(Q_l_vals)
-    Q_h_vals = np.array(Q_h_vals)
-    t_hours = t_vals / 3600.0
-    
-    # Get setpoint array for plotting
-    T_s_vals = np.array([get_heating_mode(t)[1] for t in t_vals])
-    
-    # Create plots
-    fig, axes = plt.subplots(4, 1, figsize=(14, 12))
-    
-    # Plot 1: Indoor temperature and setpoint
-    axes[0].plot(t_hours, T_i_vals, 'b-', linewidth=2.5, label='Indoor temperature T_i')
-    # Plot setpoint as a step function
-    setpoint_t = [0, 8, 8, 9, 9, 17, 17, 24]
-    setpoint_T = [np.nan, np.nan, 19, 19, 15, 15, 19, 19]
-    axes[0].plot(setpoint_t, setpoint_T, 'r--', linewidth=2, label='Setpoint T_s', alpha=0.7)
-    axes[0].axhline(T_o, color='gray', linestyle=':', linewidth=1.5, label=f'Outdoor T_o = {T_o}°C')
-    axes[0].set_ylabel('Temperature (°C)', fontsize=11)
-    axes[0].set_title('Modulating Gas Boiler Space Heating Profile (22h start, T_i(0) = 19°C)', 
-                     fontsize=13, fontweight='bold')
-    axes[0].legend(fontsize=10, loc='best')
-    axes[0].grid(True, alpha=0.3)
-    axes[0].set_xlim(0, 24)
-    
-    # Plot 2: Flow temperature
-    axes[1].plot(t_hours[1:], T_f_vals, 'orange', linewidth=2, label='Flow temperature T_f')
-    axes[1].set_ylabel('Temperature (°C)', fontsize=11)
-    axes[1].legend(fontsize=10)
-    axes[1].grid(True, alpha=0.3)
-    axes[1].set_xlim(0, 24)
-    
-    # Plot 3: Power balance
-    axes[2].plot(t_hours[1:], Q_r_vals / 1000.0, 'g-', linewidth=2.5, label='Radiator power Q_r')
-    axes[2].plot(t_hours[1:], Q_l_vals / 1000.0, 'purple', linewidth=2, label='Heat loss Q_l')
-    axes[2].plot(t_hours[1:], Q_h_vals / 1000.0, 'r--', linewidth=2, label='Control input Q_h', 
-                alpha=0.7, drawstyle='steps-pre')
-    axes[2].set_ylabel('Power (kW)', fontsize=11)
-    axes[2].legend(fontsize=10)
-    axes[2].grid(True, alpha=0.3)
-    axes[2].set_xlim(0, 24)
-    
-    # Plot 4: Control input (heating on/off + level)
-    axes[3].plot(t_hours[1:], Q_h_vals / 1000.0, 'b-', linewidth=2, label='Heating power Q_h', 
-                drawstyle='steps-pre')
-    axes[3].fill_between(t_hours[1:], 0, Q_h_vals / 1000.0, alpha=0.3, step='pre')
-    axes[3].set_xlabel('Time (hours from 22:00)', fontsize=11)
-    axes[3].set_ylabel('Power (kW)', fontsize=11)
-    axes[3].set_ylim(0, 7)
-    axes[3].legend(fontsize=10)
-    axes[3].grid(True, alpha=0.3)
-    axes[3].set_xlim(0, 24)
-    
-    # Add time labels at top
-    time_labels = ['22:00', '06:00', '09:00', '17:00', '22:00']
-    time_positions = [0, 8, 11, 19, 24]
-    for ax in axes:
-        ax.set_xticks(time_positions)
-        ax.set_xticklabels(time_labels)
-    
-    plt.tight_layout()
-    plt.savefig('gas_boiler_simulation.png', dpi=150, bbox_inches='tight')
-    print("Plot saved to gas_boiler_simulation.png")
-    
-    # Print summary statistics
-    print("\n" + "="*60)
-    print("GAS BOILER SIMULATION SUMMARY")
-    print("="*60)
-    print(f"Starting time: 22:00, Initial T_i = {T_i_0}°C")
-    print(f"Simulation duration: 24 hours")
-    print(f"Outdoor temperature: {T_o}°C (constant, from April measurement)")
-    print(f"Thermal capacity: C = {model.params.C/1e6:.2f} MJ/K (from fitted decay model)")
-    print(f"Heat transfer coeff: h = {model.params.h} W/K")
-    print(f"Time constant: τ = C/h = {model.params.C/model.params.h/3600:.3f} h")
-    print(f"Radiator constant: K = {model.params.K} W/K^{model.params.n}")
-    print(f"Maximum boiler power: {Q_boiler_max/1000:.1f} kW (limited by radiator capacity)")
-    print(f"\nTemperature statistics:")
-    print(f"  T_i min: {T_i_vals.min():.2f}°C, max: {T_i_vals.max():.2f}°C, final: {T_i_vals[-1]:.2f}°C")
-    print(f"  T_f min: {T_f_vals.min():.2f}°C, max: {T_f_vals.max():.2f}°C")
-    print(f"\nEnergy statistics:")
-    print(f"  Total heat delivered (Q_r): {np.sum(Q_r_vals[1:]) * dt / 3.6e6:.2f} kWh")
-    print(f"  Total heat loss (Q_l): {np.sum(Q_l_vals[1:]) * dt / 3.6e6:.2f} kWh")
-    print(f"  Peak radiator power: {Q_r_vals.max() / 1000:.2f} kW")
-    print(f"  Peak flow temperature: {T_f_vals.max():.2f}°C")
-    print(f"\nSolver statistics:")
-    print(f"  Successful flow temp solves: {successful_solves}")
-    print(f"  Failed flow temp solves: {failed_solves}")
-    print("="*60 + "\n")
-    
+
+        Q_l = params.h * (T_i - T_o)
+        dT_dt = (Q_r + params.Q_b - Q_l) / params.C
+        T_i = T_i + dT_dt * dt_s
+
+        T_i_arr[k + 1] = T_i
+        T_s_arr[k] = T_s if T_s is not None else np.nan
+        T_f_arr[k] = T_f
+        Q_h_arr[k] = Q_h
+        Q_r_arr[k] = Q_r
+        Q_l_arr[k] = Q_l
+        cop_arr[k] = cop_estimate(T_o, T_f) if Q_h > 50.0 else np.nan
+
+    # Fill last step
+    T_s_arr[-1] = _setpoint(t_h_arr[-1])
+    T_f_arr[-1] = T_f_arr[-2]
+    Q_l_arr[-1] = params.h * (T_i_arr[-1] - T_o)
+    cop_arr[-1] = cop_arr[-2]
+
+    total_heat_kwh = float(np.sum(Q_r_arr) * dt_s / 3.6e6)
+    gas_kwh = total_heat_kwh / BOILER_EFFICIENCY
+    cost_gbp = gas_kwh * GAS_PRICE_PER_KWH
+
     return {
-        't': t_vals,
-        'T_i': T_i_vals,
-        'T_f': T_f_vals,
-        'Q_r': Q_r_vals,
-        'Q_l': Q_l_vals,
-        'Q_h': Q_h_vals,
+        "t_h": t_h_arr,
+        "T_i": T_i_arr,
+        "T_s": T_s_arr,
+        "T_f": T_f_arr,
+        "Q_h": Q_h_arr,
+        "Q_r": Q_r_arr,
+        "Q_b": params.Q_b,
+        "Q_l": Q_l_arr,
+        "cop": cop_arr,
+        "total_heat_kwh": total_heat_kwh,
+        "gas_kwh": gas_kwh,
+        "cost_gbp": cost_gbp,
     }
 
 
-def get_setpoint(t, t_6h=28800, t_9h=39600, t_17h=68400, t_22h=86400):
-    """Legacy function for setpoint. Returns None for plotting compatibility."""
-    heating_on, T_s = get_heating_mode(t)
-    return T_s
+# ---------------------------------------------------------------------------
+# Heat pump variant cost calculation
+# ---------------------------------------------------------------------------
+
+ELECTRICITY_PRICE_PER_KWH = 27.69 / 100.0  # £/kWh  (27.69 p/kWh)
+ELECTRICITY_STANDING_CHARGE = 0.5475       # £/day  (54.75 p/day)
+
+
+def calculate_heat_pump_cost(result: dict) -> dict:
+    """Calculate electricity consumption and cost for heat pump delivering same Q_r profile.
+    
+    Args:
+        result: Dictionary returned by :func:`simulate_gas_boiler`, containing Q_r and cop arrays.
+    
+    Returns:
+        Dictionary with electricity_kwh and cost_gbp.
+    """
+    Q_r = np.array(result["Q_r"])  # W
+    cop = np.array(result["cop"])
+    dt_s = 60.0  # timestep in seconds
+    
+    # Electricity consumption: P_elec = Q_r / COP at each timestep
+    # Avoid division by zero (though COP should always be > 0)
+    P_elec = np.where(cop > 0, Q_r / cop, 0.0)  # W
+    
+    # Total electricity in kWh
+    total_elec_kwh = np.sum(P_elec * dt_s) / 3_600_000.0  # W⋅s → kWh
+    
+    # Cost
+    cost_gbp = total_elec_kwh * ELECTRICITY_PRICE_PER_KWH + ELECTRICITY_STANDING_CHARGE
     
     return {
-        't': t_vals,
-        'T_i': T_i_vals,
-        'T_f': T_f_vals,
-        'Q_r': Q_r_vals,
-        'Q_l': Q_l_vals,
-        'Q_h': Q_h_vals,
+        "electricity_kwh": total_elec_kwh,
+        "cost_gbp": cost_gbp,
     }
 
 
-if __name__ == '__main__':
-    result = simulate_gas_boiler()
+# ---------------------------------------------------------------------------
+# Plotting
+# ---------------------------------------------------------------------------
+
+
+def _apply_schedule_ticks(ax: plt.Axes) -> None:
+    ax.set_xticks(TICK_HOURS)
+    ax.set_xticklabels(TICK_LABELS)
+    ax.set_xlim(0, 24)
+    ax.grid(True, alpha=0.3)
+
+
+def plot_gas_boiler(result: dict, output_path: Path, show: bool = False, dpi: int = 200) -> Path:
+    """Produce the single-panel figure for the gas boiler simulation.
+
+    T_i (indoor) and T_s (setpoint) on the left y-axis;
+    Q_r (actual heat delivered to radiators) in kW on the right y-axis.
+
+    Args:
+        result: Dictionary returned by :func:`simulate_gas_boiler`.
+        output_path: Destination PNG path.
+        show: If True, call ``plt.show()`` after saving.
+        dpi: Output resolution.
+
+    Returns:
+        The written ``output_path``.
+    """
+    t = result["t_h"]
+    T_i = result["T_i"]
+    T_s = result["T_s"]
+    T_o = ThermalSystemParameters().T_o
+    Q_r = result["Q_r"] / 1000.0   # W → kW
+    cost = result["cost_gbp"]
+    gas_kwh = result["gas_kwh"]
+    heat_kwh = result["total_heat_kwh"]
+
+    fig, ax = plt.subplots(figsize=(11, 5))
+
+    # ── Left axis: temperatures ───────────────────────────────────────────
+    l1, = ax.plot(t, T_i, color="#1f77b4", linewidth=2, label="T_i  (indoor)")
+    l2, = ax.plot(t, T_s, color="#d62728", linewidth=1.5, linestyle="--",
+                  drawstyle="steps-post", label="T_s  (setpoint)")
+    l3 = ax.axhline(T_o, color="grey", linewidth=1, linestyle=":", label=f"T_o = {T_o:.0f} °C")
+    ax.set_ylabel("Temperature (°C)", fontsize=11)
+    ax.set_ylim(T_o - 2, 22)
+    ax.set_title(
+        f"Gas Boiler Space Heating – January 2026 (T_o = {T_o:.0f} °C)",
+        fontsize=11,
+        fontweight="bold",
+    )
+    _apply_schedule_ticks(ax)
+    ax.set_xlabel("Time of day", fontsize=11)
+
+    # ── Right axis: radiator power actually delivered ─────────────────────
+    axr = ax.twinx()
+    l4, = axr.plot(t, Q_r, color="#ff7f0e", linewidth=2, drawstyle="steps-post",
+                   label="Q_r  (heat delivered, kW)")
+    axr.fill_between(t, Q_r, step="post", alpha=0.20, color="#ff7f0e")
+    axr.set_ylabel("Heat delivered (kW)", fontsize=11, color="#ff7f0e")
+    axr.tick_params(axis="y", labelcolor="#ff7f0e")
+    axr.set_ylim(0, 6)
+
+    # combined legend – bottom left where the graph is empty
+    lines = [l1, l2, l3, l4]
+    labels = [l.get_label() for l in lines]
+    ax.legend(lines, labels, loc="lower left", fontsize=9)
+
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=dpi, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+    return output_path
+
+
+def plot_heat_pump_cop(result: dict, output_path: Path, show: bool = False, dpi: int = 200) -> Path:
+    """Produce figure showing flow temperature and COP for equivalent heat pump variant.
+
+    T_f (flow temperature) on the left y-axis;
+    COP (coefficient of performance) on the right y-axis.
+
+    Args:
+        result: Dictionary returned by :func:`simulate_gas_boiler`.
+        output_path: Destination PNG path.
+        show: If True, call ``plt.show()`` after saving.
+        dpi: Output resolution.
+
+    Returns:
+        The written ``output_path``.
+    """
+    t = result["t_h"]
+    T_f = result["T_f"]
+    cop = result["cop"]
+    T_o = ThermalSystemParameters().T_o
+    
+    # Calculate heat pump variant costs
+    hp_result = calculate_heat_pump_cost(result)
+    elec_kwh = hp_result["electricity_kwh"]
+    cost_gbp = hp_result["cost_gbp"]
+    heat_kwh = result["total_heat_kwh"]
+
+    fig, ax = plt.subplots(figsize=(11, 5))
+
+    # ── Left axis: flow temperature ───────────────────────────────────────
+    l1, = ax.plot(t, T_f, color="#1f77b4", linewidth=2, label="T_f  (flow temperature)")
+    l2 = ax.axhline(T_o, color="grey", linewidth=1, linestyle=":", label=f"T_o = {T_o:.0f} °C")
+    ax.set_ylabel("Flow temperature (°C)", fontsize=11)
+    ax.set_ylim(20, 80)
+    ax.set_title(
+        f"Equivalent Heat Pump Variant – January 2026 (T_o = {T_o:.0f} °C)",
+        fontsize=11,
+        fontweight="bold",
+    )
+    _apply_schedule_ticks(ax)
+    ax.set_xlabel("Time of day", fontsize=11)
+
+    # ── Right axis: COP ───────────────────────────────────────────────────
+    axr = ax.twinx()
+    l3, = axr.plot(t, cop, color="#2ca02c", linewidth=2, drawstyle="steps-post",
+                   label="COP")
+    axr.set_ylabel("COP", fontsize=11, color="#2ca02c")
+    axr.tick_params(axis="y", labelcolor="#2ca02c")
+    axr.set_ylim(0, 6)
+
+    # combined legend – bottom right
+    lines = [l1, l2, l3]
+    labels = [l.get_label() for l in lines]
+    ax.legend(lines, labels, loc="lower right", fontsize=9)
+
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=dpi, bbox_inches="tight")
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+    return output_path
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+
+def main(argv: Iterable[str] | None = None) -> int:
+    """Run the gas boiler simulation and save a plot.
+
+    Example usage::
+
+        heat-pump-gas-boiler
+        heat-pump-gas-boiler --outdoor-temp 0 --q-max 15000
+        heat-pump-gas-boiler --output assets/boiler_jan.png --show
+    """
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser(
+        description="Simulate one day of gas boiler space heating and estimate cost."
+    )
+    parser.add_argument(
+        "--outdoor-temp", type=float, default=5.0,
+        help="Constant outdoor temperature T_o [°C] (default: 5.0)",
+    )
+    parser.add_argument(
+        "--q-max", type=float, default=12_000.0,
+        help="Boiler maximum output [W] (default: 12000)",
+    )
+    parser.add_argument(
+        "--output", default="assets/gas_boiler_simulation.png",
+        help="Output PNG path (default: assets/gas_boiler_simulation.png)",
+    )
+    parser.add_argument("--show", action="store_true", help="Display plot interactively")
+    parser.add_argument("--dpi", type=int, default=200, help="Plot DPI (default: 200)")
+    args = parser.parse_args(args=list(argv) if argv is not None else None)
+
+    project_root = Path(__file__).resolve().parents[2]
+    output_path = Path(args.output)
+    if not output_path.is_absolute():
+        output_path = project_root / output_path
+
+    print(f"Simulating gas boiler: T_o = {args.outdoor_temp} °C …")
+    result = simulate_gas_boiler(T_o=args.outdoor_temp, Q_max=args.q_max)
+
+    h = ThermalSystemParameters().h
+    steady_kw = h * (19.0 - args.outdoor_temp) / 1000.0
+
+    print()
+    print("─" * 55)
+    print(f"  Steady-state heat loss  h·ΔT = {steady_kw:.2f} kW")
+    print(f"  Total heat delivered         = {result['total_heat_kwh']:.1f} kWh/day")
+    print(f"  Gas consumed (η=0.95)        = {result['gas_kwh']:.1f} kWh/day")
+    print(f"  Gas cost (5.93 p/kWh)        = £{result['cost_gbp']:.2f}/day")
+    print(f"  + standing charge            = £{GAS_STANDING_CHARGE:.2f}/day")
+    print(f"  Total                        = £{result['cost_gbp'] + GAS_STANDING_CHARGE:.2f}/day")
+    print("─" * 55)
+    print()
+
+    output_path = plot_gas_boiler(result, output_path, show=args.show, dpi=args.dpi)
+    print(f"Saved plot to {output_path}")
+    
+    # Also generate heat pump variant plot
+    hp_output_path = output_path.parent / output_path.name.replace("gas_boiler", "heat_pump_cop")
+    hp_result = calculate_heat_pump_cost(result)
+    print()
+    print("─" * 55)
+    print("  Equivalent Heat Pump Variant (same Q_r profile):")
+    print(f"  Total heat delivered         = {result['total_heat_kwh']:.1f} kWh/day")
+    print(f"  Electricity consumed         = {hp_result['electricity_kwh']:.1f} kWh/day")
+    print(f"  Avg. seasonal COP            = {result['total_heat_kwh'] / hp_result['electricity_kwh']:.2f}")
+    print(f"  Elec. cost (27.69 p/kWh)     = £{hp_result['cost_gbp']:.2f}/day")
+    print(f"  + standing charge            = £{ELECTRICITY_STANDING_CHARGE:.2f}/day")
+    print(f"  Total                        = £{hp_result['cost_gbp'] + ELECTRICITY_STANDING_CHARGE:.2f}/day")
+    print("─" * 55)
+    print()
+    
+    hp_output_path = plot_heat_pump_cop(result, hp_output_path, show=args.show, dpi=args.dpi)
+    print(f"Saved heat pump COP plot to {hp_output_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
