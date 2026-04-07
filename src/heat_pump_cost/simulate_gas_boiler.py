@@ -14,7 +14,6 @@ Model parameters (from April 2026 thermal identification):
 
 Simulation conditions:
   T_o  = 5 °C         January 2026 average outdoor temperature
-  Q_max = 12 000 W    gas boiler maximum output
   Boiler efficiency η = 0.95 (condensing)
   Gas price = 5.93 p/kWh (Ofgem January 2026 price cap)
 """
@@ -65,18 +64,37 @@ def _setpoint(t_hours: float) -> float | None:
     return SCHEDULE[-1][2]
 
 
-def _controller(T_i: float, T_s: float | None, h: float, T_o: float, Q_max: float) -> float:
-    """Bang-bang + feed-forward boiler controller.
+def _controller(T_i: float, T_s: float | None, h: float, T_o: float, Q_b: float, Q_max: float, at_setpoint: bool) -> tuple[float, bool]:
+    """Bang-bang + feed-forward boiler controller with hysteresis.
 
     - Heating OFF  → 0 W
-    - T_i < T_s    → Q_max  (full power)
-    - T_i ≥ T_s    → h * (T_s - T_o)  (feed-forward to hold setpoint)
+    - T_i < T_s (initial warm-up)  → Q_max until setpoint reached
+    - T_i ≥ T_s (first time)  → switch to feedforward, mark as at_setpoint
+    - at_setpoint AND T_i < T_s - 0.5°C  → Q_max (re-engage full power)
+    - at_setpoint AND T_i ≥ T_s - 0.5°C  → feedforward (gentle drop allowed)
+    
+    Returns:
+        (Q_h, new_at_setpoint): Heating power [W] and updated setpoint state
     """
     if T_s is None:
-        return 0.0
-    if T_i < T_s:
-        return Q_max
-    return max(0.0, h * (T_s - T_o))
+        return 0.0, False
+    
+    # If not at setpoint yet, use bang-bang to reach it
+    if not at_setpoint:
+        if T_i >= T_s:
+            # Just reached setpoint, switch to feedforward
+            return max(0.0, h * (T_s - T_o) - Q_b), True
+        else:
+            # Still warming up
+            return Q_max, False
+    
+    # Already at setpoint: use hysteresis to prevent frequent cycling
+    if T_i < T_s - 0.5:
+        # Temperature dropped too much, re-engage full power
+        return Q_max, False  # Mark as not at setpoint anymore
+    else:
+        # Use feedforward (allows gentle drop below setpoint)
+        return max(0.0, h * (T_s - T_o) - Q_b), True
 
 
 # ---------------------------------------------------------------------------
@@ -86,7 +104,7 @@ def _controller(T_i: float, T_s: float | None, h: float, T_o: float, Q_max: floa
 
 def simulate_gas_boiler(
     T_o: float = 5.0,
-    Q_max: float = 12_000.0,
+    Q_max: float = 50_000.0,
     T_i_0: float = 19.0,
     dt_s: float = 60.0,
 ) -> dict:
@@ -139,17 +157,26 @@ def simulate_gas_boiler(
     T_f_arr[0] = T_i_0
 
     T_i = T_i_0
+    at_setpoint = False  # Track whether we've reached the current setpoint
+    prev_setpoint = None  # Track setpoint changes
+    
     for k in range(n_steps - 1):
         t_h = t_h_arr[k]
         T_s = _setpoint(t_h)
-        Q_h = _controller(T_i, T_s, params.h, T_o, Q_max)
+        
+        # Reset at_setpoint flag if setpoint changed
+        if T_s != prev_setpoint:
+            at_setpoint = False
+            prev_setpoint = T_s
+        
+        Q_h, at_setpoint = _controller(T_i, T_s, params.h, T_o, params.Q_b, Q_max, at_setpoint)
 
         # Solve for flow temperature and actual radiator output
         if Q_h > 50.0:
             T_f = model.solve_flow_temp(Q_h, T_i)
             if T_f is None:
                 # Q_h exceeds radiator capacity; saturate at boiler max flow temperature
-                T_f = min(T_i + 55.0, 75.0)
+                T_f = min(T_i + 55.0, 80.0)
             T_r = model.solve_return_temp(T_f, T_i)
             Q_r = model.radiator_power(T_f, T_r, T_i) if T_r is not None else 0.0
         else:
@@ -222,8 +249,8 @@ def calculate_heat_pump_cost(result: dict) -> dict:
     # Total electricity in kWh
     total_elec_kwh = np.sum(P_elec * dt_s) / 3_600_000.0  # W⋅s → kWh
     
-    # Cost
-    cost_gbp = total_elec_kwh * ELECTRICITY_PRICE_PER_KWH + ELECTRICITY_STANDING_CHARGE
+    # Cost (energy only, standing charge added separately in display)
+    cost_gbp = total_elec_kwh * ELECTRICITY_PRICE_PER_KWH
     
     return {
         "electricity_kwh": total_elec_kwh,
@@ -275,7 +302,7 @@ def plot_gas_boiler(result: dict, output_path: Path, show: bool = False, dpi: in
                   drawstyle="steps-post", label="T_s  (setpoint)")
     l3 = ax.axhline(T_o, color="grey", linewidth=1, linestyle=":", label=f"T_o = {T_o:.0f} °C")
     ax.set_ylabel("Temperature (°C)", fontsize=11)
-    ax.set_ylim(T_o - 2, 22)
+    ax.set_ylim(12, 22)
     ax.set_title(
         f"Gas Boiler Space Heating – January 2026 (T_o = {T_o:.0f} °C)",
         fontsize=11,
@@ -396,8 +423,8 @@ def main(argv: Iterable[str] | None = None) -> int:
         help="Constant outdoor temperature T_o [°C] (default: 5.0)",
     )
     parser.add_argument(
-        "--q-max", type=float, default=12_000.0,
-        help="Boiler maximum output [W] (default: 12000)",
+        "--q-max", type=float, default=50_000.0,
+        help="Boiler commanded power [W] (default: 50000, actual delivery limited by radiator)",
     )
     parser.add_argument(
         "--output", default="assets/gas_boiler_simulation.png",

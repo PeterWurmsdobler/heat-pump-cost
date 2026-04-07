@@ -297,7 +297,7 @@ def plot_smooth_heat_pump_operation(
                   drawstyle="steps-post", label="T_s  (setpoint)")
     l3 = ax.axhline(T_o, color="grey", linewidth=1, linestyle=":", label=f"T_o = {T_o:.0f} °C")
     ax.set_ylabel("Temperature (°C)", fontsize=11)
-    ax.set_ylim(T_o, 22)
+    ax.set_ylim(12, 22)
     ax.set_title(
         f"Smooth Heat Pump Operation – January 2026 (T_o = {T_o:.0f} °C)",
         fontsize=11,

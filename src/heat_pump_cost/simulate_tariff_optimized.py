@@ -372,7 +372,7 @@ def plot_tariff_optimized_operation(
     l1, = ax.plot(t, T_i, color="#1f77b4", linewidth=2, label="T_i  (indoor)")
     l2 = ax.axhline(T_o, color="grey", linewidth=1, linestyle=":", label=f"T_o = {T_o:.0f} °C")
     ax.set_ylabel("Temperature (°C)", fontsize=11)
-    ax.set_ylim(T_o, 22)
+    ax.set_ylim(12, 22)
     ax.set_title(
         f"Tariff-Optimized Heat Pump – January 2026 (T_o = {T_o:.0f} °C)",
         fontsize=11,
