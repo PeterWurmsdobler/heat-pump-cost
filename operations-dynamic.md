@@ -8,35 +8,40 @@ A stationary model assumes all process variables to be constant at a given point
 
 ## Dynamic Thermal Model
 
-A dynamic model reflects the time-variant behaviour of a system. Here, I would like to use the simplest conceivable model, a linear first order model with two time-invariant parameters: the thermal capacity C of the entire house, and the specific heat loss, or Heat Transfer Coefficient (HTC), or h. The following process variables will be considered: internal temperature T_i, and outside temperature T_o; heat is supplied as Q_h at flow temperature T_f and return temperature T_r, then transferred to the internal thermal mass as Q_r through radiators. The house loses heat as Q_l through the building fabric determined by h.
+A dynamic model reflects the time-variant behaviour of a system. Here, I would like to use the simplest conceivable model, a linear first order model with two time-invariant parameters: the thermal capacity C of the entire house, and the specific heat loss, or Heat Transfer Coefficient (HTC), or h. The following process variables will be considered: internal temperature T_i, and outside temperature T_o; heat is supplied as Q_h at flow temperature T_f and return temperature T_r, then transferred to the internal thermal mass as Q_r through radiators; in addition, occupancy and applieances are accounted for with a heating power of Q_a. The house loses heat as Q_l through the building fabric determined by h.
 
 ![Simple dynamic thermal model for house](assets/house-model-dynamic.png)
 *Figure: Simple representation of a simple dynamic house model with heat source, capacity and losses.*
 
-Most commonly differential equations are used to describe dynamic systems. The following equations define the behaviour, using heating fluid (water) density ρ, its specific thermal capacity c_p and a flow rate V_f, the characteristic radiator constant K and radiative exponent n, and finally the transfer coefficient h, all together:
+Most commonly differential equations are used to describe dynamic systems; in this case, using heating fluid (water) density ρ, its specific thermal capacity c_p and a flow rate V_f, the characteristic radiator constant K and radiative exponent n, and finally the transfer coefficient h, the equations are:
 
 Q_h = V_f * ρ * c_p * (T_f - T_r)<br>
 Q_r = K * ((T_f + T_r)/2 - T_i)^n<br>
 Q_l = h * (T_i - T_o)<br>
-C * dT_i/dt = Q_r - Q_l
+C * dT_i/dt = Q_r + Q_a - Q_l
 
-[How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations ](https://medium.com/@peter-wurmsdobler/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd) has identified the values of some parameters for the dynamic analysis: h = 244 W/K; K = 4.9 W/K^1.2, ρ = 1 kg/l and c_p = 4.18 kJ/kg/K, V_f is assumed to be constant at 20 l/s for this analysis; heat power is only modulated through the flow temperature only (which keeps the flow temperature as low as possible). Also note, the heat balance for the radiator circuit (no losses in short pipework), is Q_h = Q_r. There is only one parameter missing: C, the house's thermal capacity.
+[How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations ](https://medium.com/@peter-wurmsdobler/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd) has identified the values of some parameters for the dynamic analysis: K = 44.9 W/K^1.2 with n = 1.2, ρ = 1 kg/l and c_p = 4.18 kJ/kg/K, V_f is assumed to be constant at 20 l/s for this analysis; heat power is only modulated through the flow temperature only (which keeps the flow temperature as low as possible). Also note, the heat balance for the radiator circuit (no losses in short pipework), is Q_h = Q_r. For the heat loss coefficient, we have two values: h = 244 W/K from first principles, or h = 188 W/K from recorded power consumption; the appliance/occupancy heat source is about Q_a = 0.3W but could be more; C, the house's thermal capacity is completely unknown.
 
 ## Model Parameter Identification
 
-Modelling a thermal system as a lumped mass with a certain heat capacity C and an estiamted heat loss coefficient h lends itself to a simplification: without any radiator heat input the evolution of the indoor temperature will follow a simplified equation:
+An entire disciplin in control systems analysis and design is model parameter identification, usually based on recorded data, or data obtained through a system response on a stimulus. To that end, we consider a simplified model that eliminates the heating system internals:
 
-C * dT_i/dt = -h * (T_i - T_o)
+C * dT_i/dt = -h * (T_i - T_o) + Q_a + Q_r
 
-In practical terms, once the heating has stopped late at night, the house will cool down through its thermal losses. We can record the resulting indoor temperature, e.g. using a Raspberry PicoPi, then subject the data to some system parameter identification tools, and plot the results as shown below. Over an experimental period from 1am to 6am, the outdoor temperature was relatively constant at about 7C; this yields C = 2.01 MJ/K and the associated time constant τ = C/h = 8242 s = 2.289 h. 
+In practical terms, we need to set up some experiments and record data, or obtain data from other means. To obtain the internal temperature, a simple programm running on a Raspberry PicoPi can record internal temperature measurements. Outside temperatures we can obtain from some source such as XXX. As for the heating power, we consider two cases:
+
+- The time between 10pm and 6am when the heating is off, i.e. Q_r = 0
+- The time from 6am to 7am when the heating is on full power, i.e. Q_r = 6kW.
+
+Once that data was recorded, some system parameter identification tools are employed to obtain some esimtates for the missing parameters, C, h and Q_a; results as shown below. The parameters are found to be C = 2.01 MJ/K, h = 190 W/K, and the associated time constant τ = C/h = 8242 s = 2.289 h, as well as Q_a = 0.5kW.
 
 ![Contour Plot](assets/temperature_plot.png)
-*Figure: measured inside temperature and estimated inside temperature based on the model from 1am to 6am*
+*Figure: measured and estimated inside temperature based on the model in various conditions.*
 
 
 # Dynamic Heating Simulation
 
-Since we now have got a parameterised dynamic model, it should be possible to work out the heating requirments, and eventually the cost of heating. For this story, let's assume the January 2026 conditions with an average outdoor temperature T_o = 5°C. Without any other heat sources, the the heating requirement in a steady state would be Q_l = Q_r = 244 × 14 = **3.42 kW** to maintain an average of 19°C indoors, or ~82kWh/day, to give a ballpark figure for the heating requirements. 
+Since we now have got a parameterised dynamic model, it should be possible to work out the heating requirments, and eventually the cost of heating. For this story, let's assume the January 2026 conditions with an average outdoor temperature T_o = 5°C. Without any other heat sources, the the heating requirement in a steady state would be Q_l = Q_r = XXX × 14 = **3.XXX kW** to maintain an average of 19°C indoors, or ~82kWh/day, to give a ballpark figure for the heating requirements. But houses are usually not maintained at a constant temperature throughout the day; this is where the dynamic simulation comes in.
 
 ## Gas Boiler Space Heating
 
@@ -46,7 +51,7 @@ Let's assume a traditional daily heating profile as pictured below using a gas b
 - feed-forward heating power at constant T_s with Q_h = h * (T_s - T_o);
 - if T_i > T_s, then no heating required at all, let the temperature decay; 
 
-GRAPH: profiles of T_i, T_s, and P on the right
+GRAPH: profiles of T_i, T_s on left, and P on the right
 
 The gas boiler would not struggle to produce the required power and deliver the heat through the necesary flow temperature through the existing radiators. Realising this temperature profile using a gas boiler would cost us £/day, XXX hours on full power at 12kW, i.e. XXX kWh delivered at XXX p/kWh yields £ XXX.
 
@@ -54,7 +59,7 @@ GRAPH: profiles of T_f, COP on the right
 
 ## Equivalent Heat Pump Variant
 
-Let's assume we got an equivalent and very powerful heat pump installed: 12kW peak power. Now, let's run the heat pump to deliever the same power, which would lead to the same flow and return temperatures at the same flow rate. Then let's look at the COP and the resulting electricity consumption. XXX hours on full power at 12kW heat, divided by the COP at the time, all together yields XXX kWh in electricity. At a constant cost of XXX p/kWh, this would cost £ XXX. This is what you get it you run a heat pump like a gas boiler on a flat tariff.
+Let's assume we got an equivalent and very powerful heat pump installed: 6kW peak power. Now, let's run the heat pump to deliever the same power, which would lead to the same flow and return temperatures at the same flow rate. Then let's look at the COP and the resulting electricity consumption. XXX hours on full power at 12kW heat, divided by the COP at the time, all together yields XXX kWh in electricity. At a constant cost of XXX p/kWh, this would cost £ XXX. This is what you get it you run a heat pump like a gas boiler on a flat tariff.
 
 GRAPH: profiles of T_f, COP on the right
 
