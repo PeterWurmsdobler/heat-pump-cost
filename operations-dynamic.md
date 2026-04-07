@@ -2,6 +2,10 @@
 
 The preceding story, [How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations ](https://medium.com/@peter-wurmsdobler/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd), addresses the implications of the spark gap on capital and operational expenses due to a nearly unavoidable upgrade in radiator capacity in order to keep the flow temperature low and the [Coefficient of Performance](https://en.wikipedia.org/wiki/Coefficient_of_performance) (COP) high; there a simple static thermal analysis looks at average quantities for heat loss and temperature for a heat pump in a stationary operation. The situation changes if dynamic aspects are taken into account for the operation of the heat pump in contrast to the gas boiler operation most homes are used to, both in terms of setpoint temperature profiles and electricity tariffs. As presented in sources such as ["So You're Thinking About a Heat Pump: The UK Homeowner's Guide to Heat Pumps"](https://www.amazon.co.uk/Youre-Thinking-About-Heat-Pump/dp/B0GK7H511K/), heat pumps require different operating strategies compared to gas boilers. The objective of this story is to demonstrate quantitatively how control and operation strategy impacts the economics of domestic heat pump heating. 
 
+![Cat prefers consistent heat](assets/smooth-operator.png)
+*Figure: A cat would prefer the smooth operation of a heating system with a heat pump.*
+
+
 # Dynamic Modelling
 
 A stationary model assumes all process variables to be constant at a given point of operation: for a constant outdoor temperature a constant heating power is required to maintain a constant indoor temperature by compensating a constant heat loss. While this static analysis can provide some insight in minimum requirements for heating at various operation points, a dynamic analysis is looking at time-variant process variables such as heating power or flow temperature. To that end a dynamic model of the system is required first.
