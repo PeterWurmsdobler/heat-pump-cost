@@ -59,7 +59,7 @@ Let's assume a traditional daily heating profile as pictured below using a gas b
 ![Contour Plot](assets/gas_boiler_simulation.png)
 *Figure: January day heated with gas boiler, heat = 33.8 kWh/day, £2.46/day.*
 
-The gas boiler produces a peak power of 5.3 kW and delivers that heat through the flow temperature reaching 74°C to the existing radiators. The simulation shows that with a daily heat delivery of 33.8 kWh, the boiler consumes 35.6 kWh of gas (at 95% efficiency). The total daily cost is £2.46 (£2.11 gas energy + £0.35 gas standing charge).
+The gas boiler produces a peak power of 5.3 kW and delivers that heat through the flow temperature reaching 74°C to the existing radiators. The simulation shows that with a daily heat delivery of 33.8 kWh, the boiler consumes 35.6 kWh of gas (at 95% efficiency). The total daily cost is £2.46 (£2.11 gas energy + £0.35 gas standing charge)(^2).
 
 ## Equivalent Heat Pump Variant
 
@@ -69,7 +69,7 @@ Let's assume we install an equivalent heat pump capable of delivering the same p
 - During steady-state heating (T_f ≈ 37-43°C): COP ≈ **4.7**
 - Overall seasonal average: **SCOP = 3.23**
 
-With the power divided by the COP at each timestep, the total electricity consumption is **10.5 kWh/day**. At the January 2026 electricity price of 27.69 p/kWh, this would cost **£2.90/day**. Compare this to the gas boiler cost of £2.46/day, and we see that running a heat pump like a gas boiler on a flat tariff costs **18% more** than gas despite the favorable spark gap of 4.67. Conclusion: do not run a heat pump like a gas boiler; Q.E.D.
+With the power divided by the COP at each timestep, the total electricity consumption is **10.5 kWh/day**. At the January 2026 electricity price of 27.69 p/kWh, this would cost **£2.90/day** (^3). Compare this to the gas boiler cost of £2.46/day, and we see that running a heat pump like a gas boiler on a flat tariff costs **18% more** than gas despite the favorable spark gap of 4.67. Conclusion: do not run a heat pump like a gas boiler; Q.E.D.
 
 ![Heat Pump COP Profile](assets/heat_pump_cop_simulation.png)
 *Figure: January day with equivalent heat pump, heat = 33.8 kWh/day, electricity = 10.5 kWh/day, £2.90/day.*
@@ -97,7 +97,7 @@ This demonstrates that heat pump economics depend critically on control strategy
 
 ## Playing the Dynamic Tariffs
 
-Suppose electricity does not incur the same cost throughout the day, but rather a dynamic tariff such as [Octopus Energy Cosy](https://octopus.energy/smart/cosy-octopus/), which offers three distinct rate periods designed to encourage load shifting away from peak demand hours:
+Suppose electricity does not incur the same cost throughout the day, but rather a dynamic tariff such as [Octopus Energy Cosy](https://octopus.energy/smart/cosy-octopus/)(^4), which offers three distinct rate periods designed to encourage load shifting away from peak demand hours:
 
 - **Cosy rate** (04:00–07:00, 13:00–16:00, 22:00–00:00): **14.53 p/kWh** — cheap periods, 56% below standard rate
 - **Day rate** (all other times): **33.28 p/kWh** — standard rate, 20% above flat tariff
@@ -174,5 +174,4 @@ In summary, a heating system using a heat pump cannot be operated like one with 
 
 3. **Heating costs**: The underlying assumption in the comparison is that households would always have an electricity supply; therefore, an electricity standing charge would be due in all cases and will not be included in the comparison. The gas standing charge, however, is added to the gas heating scenario as any other scenario would not incur that charge (assuming a fully electrified home).
 
-4. **Octopus Cosy**: This tariff is location dependent and used to be quite interesting, cosy rate down to 8p/kWh. Now the rates are as follows. Day rate: 33.28p / kWh, Cosy rate (04:00 - 07:00, 13:00 - 16:00, 22:00 - 00:00): 14.53p / kWh, Peak rate (16:00 - 19:00): 51.68p / kWh; Standing charge: 52.19p / day. 
-
+4. **Octopus Cosy**: This tariff is location dependent and used to be quite interesting, cosy rate down to 8p/kWh. Now the rates are as follows. Day rate: 33.28p / kWh, Cosy rate (04:00 - 07:00, 13:00 - 16:00, 22:00 - 00:00): 14.53p / kWh, Peak rate (16:00 - 19:00): 51.68p / kWh; Standing charge: 52.19p / day. Prices include VAT.
