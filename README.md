@@ -112,7 +112,7 @@ A qualitative analysis of the three main barriers — capital cost, space requir
 
 **File:** [operations-static.md](operations-static.md)
 
-Uses a steady-state lumped-mass thermal model, empirically calibrated from January 2026 bills (K = 44.9 W/K^1.2), to show how the spark gap (currently 4.67) sets the minimum COP threshold and thereby the required flow temperature and radiator capacity for three heating load scenarios.
+Uses a steady-state lumped-mass thermal model with radiator constant K = 71.2 W/K^1.2 to show how the spark gap (currently 4.67) sets the minimum COP threshold and thereby the required flow temperature and radiator capacity for three heating load scenarios.
 
 ### Generate the plots
 
@@ -141,7 +141,7 @@ All constants are defined at the top of each module and can be edited directly:
 | `HTC` | `244.0` W/K | House heat transfer coefficient |
 | `TI` | `19.0` °C | Indoor temperature |
 | `TO` | `5.0` °C | Outdoor temperature (design month) |
-| `K_RAD` | `44.9` W/K^1.2 | Empirical radiator constant |
+| `K_RAD` | `71.2` W/K^1.2 | Radiator constant |
 | `N_RAD` | `1.2` | Radiator exponent |
 | `Q_TARGET` | `1960.0` W | Average radiator power (from bills) |
 
@@ -149,7 +149,7 @@ All constants are defined at the top of each module and can be edited directly:
 
 | Constant | Default | Description |
 |---|---|---|
-| `K_CURRENT` | `44.9` W/K^1.2 | Current radiator constant |
+| `K_CURRENT` | `71.2` W/K^1.2 | Current radiator constant |
 | `COP_EFFICIENCY` | `0.55` | Carnot efficiency factor (η) |
 | `T_LIFT` | `5.0` K | Temperature lift: radiator flow → HP condenser |
 | `VF_FIXED` | `20 l/min` | Fixed flow rate assumed at high-flow operation |
@@ -202,7 +202,7 @@ Simulates traditional gas boiler operation with schedule:
 - 09:00–17:00: 15°C reduced (away)
 - 17:00–22:00: 19°C comfort
 
-**Results:** 33.8 kWh/day heat, 35.6 kWh/day gas, £2.46/day (gas energy + gas SC)
+**Results:** 34.0 kWh/day heat, 35.8 kWh/day gas, £2.47/day (gas energy + gas SC)
 
 **Outputs:**
 - `assets/gas_boiler_simulation.png` — temperature and power profiles
@@ -220,7 +220,7 @@ Simulates optimized continuous operation:
 - Max flow temperature 45°C
 - Predictive control with 3-hour lookahead
 
-**Results:** 36.7 kWh/day heat, 8.3 kWh/day electricity, SCOP 4.44, £2.29/day (7% cheaper than gas)
+**Results:** 36.7 kWh/day heat, 7.1 kWh/day electricity, SCOP 5.18, £1.96/day (20% cheaper than gas)
 
 **Outputs:**
 - `assets/smooth_heat_pump_operation.png` — temperature and power profiles
@@ -237,9 +237,9 @@ Simulates cost optimization for Octopus Cosy dynamic tariff:
 - Peak period (51.68p): minimal heating, coast on stored energy
 - Day periods (33.28p): moderate operation
 
-**Results:** 41.3 kWh/day heat, 10.0 kWh/day electricity, SCOP 4.13, £2.51/day
-- Saves £0.26/day vs flat tariff operation (£39/year)
-- 2% more expensive than gas, but saves £39/year vs running the same strategy on a flat tariff
+**Results:** 41.3 kWh/day heat, 8.5 kWh/day electricity, SCOP 4.85, £2.15/day
+- Saves £0.20/day vs flat tariff operation (£30/year)
+- 13% cheaper than gas (£2.47/day), and saves £30/year vs running the same strategy on a flat tariff
 
 **Outputs:**
 - `assets/octopus_cosy_tariff.png` — tariff structure visualization
@@ -256,7 +256,7 @@ All identified from April 2026 experiments:
 | `h` | 142.6 W/K | Heat transfer coefficient |
 | `Q_b` | 500 W | Background heat (appliances, occupancy) |
 | `τ` | 40.8 hours | Thermal time constant (C/h) |
-| `K` | 44.9 W/K^1.2 | Radiator constant |
+| `K` | 71.2 W/K^1.2 | Radiator constant |
 | `n` | 1.2 | Radiator exponent |
 
 ### Energy Prices (January 2026)

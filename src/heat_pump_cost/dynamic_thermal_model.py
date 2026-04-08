@@ -37,7 +37,7 @@ class ThermalSystemParameters:
     Q_b: float = 500.0     # Background heat – appliances / occupancy [W]
 
     # Radiator properties
-    K: float = 44.9        # Radiator constant [W/K^n]
+    K: float = 71.2        # Radiator constant [W/K^n]
     n: float = 1.2         # Radiator exponent
 
     # Flow rate

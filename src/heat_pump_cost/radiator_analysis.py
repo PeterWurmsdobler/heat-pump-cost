@@ -23,7 +23,7 @@ TI = 19.0  # Indoor temperature [°C]
 TO = 5.0  # Outdoor temperature [°C]
 
 # Radiator properties
-K_CURRENT = 44.9  # Current radiator constant [W/K^1.2]
+K_CURRENT = 71.2  # Radiator constant from survey [W/K^1.2]
 N_RAD = 1.2  # Radiator exponent
 
 # Operating parameters

@@ -318,7 +318,7 @@ def plot_gas_boiler(result: dict, output_path: Path, show: bool = False, dpi: in
     axr.fill_between(t, Q_r, step="post", alpha=0.20, color="#ff7f0e")
     axr.set_ylabel("Heat delivered (kW)", fontsize=11, color="#ff7f0e")
     axr.tick_params(axis="y", labelcolor="#ff7f0e")
-    axr.set_ylim(0, 6)
+    axr.set_ylim(0, 9)
 
     # combined legend – bottom left where the graph is empty
     lines = [l1, l2, l3, l4]
@@ -382,7 +382,7 @@ def plot_heat_pump_cop(result: dict, output_path: Path, show: bool = False, dpi:
                    label="COP")
     axr.set_ylabel("COP", fontsize=11, color="#2ca02c")
     axr.tick_params(axis="y", labelcolor="#2ca02c")
-    axr.set_ylim(0, 6)
+    axr.set_ylim(0, 7)
 
     # combined legend – bottom right
     lines = [l1, l2, l3]

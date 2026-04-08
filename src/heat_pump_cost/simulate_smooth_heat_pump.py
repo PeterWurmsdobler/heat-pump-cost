@@ -363,7 +363,7 @@ def plot_smooth_heat_pump_cop(
     l4, = axr.plot(t, cop, color="#2ca02c", linewidth=2, label="COP")
     axr.set_ylabel("COP", fontsize=11, color="#2ca02c")
     axr.tick_params(axis="y", labelcolor="#2ca02c")
-    axr.set_ylim(0, 6)
+    axr.set_ylim(0, 7)
     
     lines = [l1, l2, l3, l4]
     labels = [l.get_label() for l in lines]

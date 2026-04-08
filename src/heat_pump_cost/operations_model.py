@@ -24,9 +24,9 @@ TO = 5.0  # Outdoor temperature [°C] (January 2026 average)
 # Radiator properties
 # Empirically calibrated from January 2026 actual operation:
 # - Average heating power: 1.96 kW at Ti=19°C, To=5°C
-# - Observed mean radiator temp: ~42.3°C (at ~10 l/min)
+# - Observed mean radiator temp: ~35°C (flow ~36°C, return ~34°C at ~10 l/min)
 # - This includes all radiators + pipework heat distribution
-K_RAD = 44.9  # Empirical radiator constant [W/K^n]
+K_RAD = 71.2  # Radiator constant from survey [W/K^n]
 N_RAD = 1.2  # Radiator exponent
 
 # Target heating power (actual average from January 2026)
