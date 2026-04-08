@@ -175,10 +175,10 @@ Uses a first-order dynamic thermal model with parameters identified from recorde
 
 1. **Gas boiler** — traditional on/off control with morning and evening warm-up periods
 2. **Simple thermostat heat pump** — mimics gas boiler operation, shows inefficiency of high flow temperatures
-3. **Smooth continuous heat pump** — optimized continuous operation with baseline heating, achieves 11% lower cost than gas
+3. **Smooth continuous heat pump** — optimized continuous operation with baseline heating, achieves 7% lower cost than gas
 4. **Tariff-optimized heat pump** — exploits Octopus Cosy dynamic pricing by pre-heating during cheap periods
 
-Demonstrates that control strategy is critical: same hardware ranges from 27% more expensive than gas (simple thermostat) to 11% cheaper (smooth continuous operation).
+Demonstrates that control strategy is critical: same hardware ranges from 18% more expensive than gas (simple thermostat) to 7% cheaper (smooth continuous operation).
 
 ### CLI Commands
 
@@ -202,7 +202,7 @@ Simulates traditional gas boiler operation with schedule:
 - 09:00–17:00: 15°C reduced (away)
 - 17:00–22:00: 19°C comfort
 
-**Results:** 36.6 kWh/day heat, £3.19/day total cost (gas + standing charges)
+**Results:** 33.8 kWh/day heat, 35.6 kWh/day gas, £2.46/day (gas energy + gas SC)
 
 **Outputs:**
 - `assets/gas_boiler_simulation.png` — temperature and power profiles
@@ -220,7 +220,7 @@ Simulates optimized continuous operation:
 - Max flow temperature 45°C
 - Predictive control with 3-hour lookahead
 
-**Results:** 36.7 kWh/day heat, 8.3 kWh/day electricity, SCOP 4.44, £2.84/day (11% cheaper than gas)
+**Results:** 36.7 kWh/day heat, 8.3 kWh/day electricity, SCOP 4.44, £2.29/day (7% cheaper than gas)
 
 **Outputs:**
 - `assets/smooth_heat_pump_operation.png` — temperature and power profiles
@@ -237,9 +237,9 @@ Simulates cost optimization for Octopus Cosy dynamic tariff:
 - Peak period (51.68p): minimal heating, coast on stored energy
 - Day periods (33.28p): moderate operation
 
-**Results:** 41.3 kWh/day heat, 10.0 kWh/day electricity, SCOP 4.13, £3.06/day
-- Saves £0.26/day vs flat tariff (£39/year)
-- Still 4% cheaper than gas despite lower efficiency
+**Results:** 41.3 kWh/day heat, 10.0 kWh/day electricity, SCOP 4.13, £2.51/day
+- Saves £0.26/day vs flat tariff operation (£39/year)
+- 2% more expensive than gas, but saves £39/year vs running the same strategy on a flat tariff
 
 **Outputs:**
 - `assets/octopus_cosy_tariff.png` — tariff structure visualization
@@ -265,7 +265,7 @@ All identified from April 2026 experiments:
 - **Electricity (flat):** 27.69p/kWh + 54.75p/day standing charge
 - **Octopus Cosy:** 14.53p (cheap), 33.28p (day), 51.68p (peak 16:00–19:00)
 
-All cost comparisons include electricity standing charges for all scenarios, providing fair comparison.
+Electricity standing charges are excluded from all scenarios (all households pay this regardless of heating method). Gas standing charge is included for the gas boiler scenario only, as it would not apply to heat pump households.
 
 ---
 
