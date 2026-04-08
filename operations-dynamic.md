@@ -12,7 +12,7 @@ A stationary model assumes all process variables to be constant at a given point
 
 ## Dynamic Thermal Model
 
-A dynamic model reflects the time-variant behaviour of a system. Here, I would like to use the simplest conceivable model, a linear first order model with two time-invariant parameters: the thermal capacity C of the entire house, and the specific heat loss, or Heat Transfer Coefficient (HTC), or h. The following process variables will be considered: internal temperature T_i, and outside temperature T_o; heat is supplied as Q_h at flow temperature T_f and return temperature T_r, then transferred to the internal thermal mass as Q_r through radiators; in addition, occupancy and appliances are accounted for with a heating power of Q_b. The house loses heat as Q_l through the building fabric determined by h.
+A dynamic model reflects the time-variant behaviour of a system. Here, I would like to use the simplest conceivable model, a linear first-order model with two time-invariant parameters: the thermal capacity C of the entire house, and the specific heat loss, or Heat Transfer Coefficient (HTC), or h. The following process variables will be considered: internal temperature T_i, and outside temperature T_o; heat is supplied as Q_h at flow temperature T_f and return temperature T_r, then transferred to the internal thermal mass as Q_r through radiators; in addition, occupancy and appliances are accounted for with a heating power of Q_b. The house loses heat as Q_l through the building fabric determined by h.
 
 ![Simple dynamic thermal model for house](assets/house-model-dynamic.png)
 *Figure: Simple representation of a simple dynamic house model with heat source, capacity and losses.*
@@ -38,7 +38,7 @@ In practical terms, we need to set up some experiments and record data. To obtai
 - "2026-04-05 22:45:00" to "2026-04-06 04:20:00", outside T_o = 3°C, heating off, i.e. Q_r = 0, and Q_b ~0.5kW
 - "2026-04-06 06:30:00" to "2026-04-06 08:15:00", outside T_o = 3°C - 7°C, heating on full power, i.e. Q_r > 0 kW, and Q_b ~0.5kW
 
-Said system parameter identification tools are employed to obtain estimates for the missing parameters, C, h and Q_b; results as shown below, details on [Thermal Parameter Identification for the Dynamic House Model](https://github.com/PeterWurmsdobler/heat-pump-cost/system-identification.md). The parameters are found to be C = 21.0 MJ/K, h = 142.6 W/K, and the associated time constant τ = 146,937 s  (40.8 h), as well as Q_b = 500 W and Q_r = 4 kW during the morning heating period. Note, the time constant of 40.8 h means that the house  if left unheated would cool down by 63% towards the constant outside temperature after one time constant (40.8 h, roughly 1.7 days). 
+These system parameter identification tools are employed to obtain estimates for the missing parameters, C, h and Q_b; results as shown below, details on [Thermal Parameter Identification for the Dynamic House Model](https://github.com/PeterWurmsdobler/heat-pump-cost/system-identification.md). The parameters are found to be C = 21.0 MJ/K, h = 142.6 W/K, and the associated time constant τ = 146,937 s  (40.8 h), as well as Q_b = 500 W and Q_r = 4 kW during the morning heating period. Note, the time constant of 40.8 h means that the house, if left unheated, would cool down by 63% towards the constant outside temperature after one time constant (40.8 h, roughly 1.7 days). 
 
 ![Contour Plot](assets/temperature_plot.png)
 *Figure: measured and estimated inside temperature based on the model in three conditions.*
@@ -46,11 +46,11 @@ Said system parameter identification tools are employed to obtain estimates for 
 
 # Dynamic Heating Simulation
 
-Since we now have got a parameterised dynamic model, it should be possible to work out the dynamic heating requirements, too, and eventually the cost of heating with various sources. For this story, let's assume the January 2026 conditions with an average outdoor temperature T_o = 5°C. The heating requirement in a steady state would be Q_l = Q_r = 142.6 × 14 = **2.0 kW** to maintain an average of 19°C indoors, or ~48 kWh/day, to give a ballpark figure for the heating requirements. But houses are usually not maintained at a constant temperature throughout the day; this is where the dynamic simulation comes in.
+Now that we have a parameterised dynamic model, it is possible to work out the dynamic heating requirements, too, and eventually the cost of heating with various sources. For this story, let's assume the January 2026 conditions with an average outdoor temperature T_o = 5°C. The heating requirement in a steady state would be Q_l = Q_r = 142.6 × 14 = **2.0 kW** to maintain an average of 19°C indoors, or ~48 kWh/day, to give a ballpark figure for the heating requirements. But houses are usually not maintained at a constant temperature throughout the day; this is where the dynamic simulation comes in.
 
 ## Gas Boiler Space Heating
 
-Let's assume a traditional daily heating profile as pictured below using a gas boiler with a maximum power of 5.4kW(^1): heating off after 22h, heating on at 6h in the morning with a setpoint of T_s = 19°C and at full capacity, off at 9h when we leave the house but keep the house above as T_s = 15°C, on again at 17h until 22h with T_s = 19°C. The simplisitic relay-based thermostatic controller would do the following:
+Let's assume a traditional daily heating profile as pictured below using a gas boiler with a maximum power of 5.4kW(^1): heating off after 22h, heating on at 6h in the morning with a setpoint of T_s = 19°C and at full capacity, off at 9h when we leave the house but keep the house above as T_s = 15°C, on again at 17h until 22h with T_s = 19°C. The simplistic relay-based thermostatic controller would do the following:
 
 - if T_i < T_s, heat at full power until target temperature of T_s is reached; 
 - once T_s is reached, feed-forward heating power Q_h = h * (T_s - T_o);
@@ -59,11 +59,11 @@ Let's assume a traditional daily heating profile as pictured below using a gas b
 ![Contour Plot](assets/gas_boiler_simulation.png)
 *Figure: January day heated with gas boiler, heat = 33.8 kWh/day, £2.46/day.*
 
-The gas boiler produces a peak power of 5.3 kW and deliver that heat through the flow temperature reaching 74°C to the existing radiators. The simulation shows that with a daily heat delivery of 33.8 kWh, the boiler consumes 35.6 kWh of gas (at 95% efficiency). The total daily cost is £2.46 (£2.11 gas energy + £0.35 gas standing charge).
+The gas boiler produces a peak power of 5.3 kW and delivers that heat through the flow temperature reaching 74°C to the existing radiators. The simulation shows that with a daily heat delivery of 33.8 kWh, the boiler consumes 35.6 kWh of gas (at 95% efficiency). The total daily cost is £2.46 (£2.11 gas energy + £0.35 gas standing charge).
 
 ## Equivalent Heat Pump Variant
 
-Let's assume we install an equivalent heat pump capable of delivering the same power. Now, let's run the heat pump to deliver the same power, which would lead to the same flow and return temperatures at the same flow rate. Then let's look at the COP and the resulting electricity consumption. The flow temperature profile mirrors the power demand: when the house needs rapid heating in the morning and evening, the heat pump must push flow temperatures up to **74°C**, which reduces efficiency. The Coefficient of Performance varies throughout the day:
+Let's assume we install an equivalent heat pump capable of delivering the same power. Now, let's run the heat pump to deliver the same power, which would lead to the same flow and return temperatures at the same flow rate. Then let's look at the COP and the resulting electricity consumption. The flow temperature profile mirrors the power demand: when the house needs rapid heating in the morning and evening, the heat pump must push flow temperatures up to **74°C**, which reduces efficiency. The [Coefficient of Performance](https://github.com/PeterWurmsdobler/heat-pump-cost/cop-estimation.md) varies throughout the day:
 
 - During high-power warm-up periods (T_f ≈ 74°C): COP ≈ **2.7**
 - During steady-state heating (T_f ≈ 37-43°C): COP ≈ **4.7**
@@ -97,7 +97,7 @@ This demonstrates that heat pump economics depend critically on control strategy
 
 ## Playing the Dynamic Tariffs
 
-Suppose electricity does not incur the same cost throughout the day, but rather a dynamic tariff such as with [Octopus Energy Cosy](https://octopus.energy/smart/cosy-octopus/), which offers three distinct rate periods designed to encourage load shifting away from peak demand hours:
+Suppose electricity does not incur the same cost throughout the day, but rather a dynamic tariff such as [Octopus Energy Cosy](https://octopus.energy/smart/cosy-octopus/), which offers three distinct rate periods designed to encourage load shifting away from peak demand hours:
 
 - **Cosy rate** (04:00–07:00, 13:00–16:00, 22:00–00:00): **14.53 p/kWh** — cheap periods, 56% below standard rate
 - **Day rate** (all other times): **33.28 p/kWh** — standard rate, 20% above flat tariff
@@ -127,9 +127,9 @@ It is worth noting that the Octopus Cosy tariff used to offer a cheap rate as lo
 
 ## Operational Limitations
 
-These simulations only assume that the heat pump is being used for space heating; most heat pumps also need to provide power for domestic hot water. Given the thermal capacity of water (4.18 kJ/kg/K), a few people taking showers at a certain flow rate either needs a powerful heat pump, order of 20kW-30kW, or a hot water tank that is being heated gradually when time and cost permits. This periods are not available for space heating. For instance, heating 200 l/day of water from 10°C to 60°C requires 11.6 kWh of thermal energy; at a heat pump power rating of 6 kW, this requires about 2 hours for hot water generation. 
+These simulations only assume that the heat pump is being used for space heating; most heat pumps also need to provide power for domestic hot water. Given the thermal capacity of water (4.18 kJ/kg/K), this requires either a powerful heat pump (of the order of 20–30 kW) or a hot water tank that is heated gradually when time and cost permit. These periods are not available for space heating. For instance, heating 200 l/day of water from 10°C to 60°C requires 11.6 kWh of thermal energy; at a heat pump power rating of 6 kW, this requires about 2 hours for hot water generation. 
 
-There is another factor to be taken into account in colder areas: defrost cycles. Periodically, the heat pump switches into reverse mode to make sure the pipework does not freeze up. 
+There is another factor to be taken into account in colder areas: defrost cycles. Periodically, the heat pump switches into reverse mode to melt ice build-up on the outdoor heat exchanger coil. 
 
 
 # Comparison
@@ -156,11 +156,14 @@ The smooth continuous heat pump operation achieves the lowest cost of all scenar
 
 # Conclusion
 
-In summary, a heating system using a heat pump cannot be operated like one with a gas boiler; it needs an awareness of energy prices (e.g. day ahead prices on agile tariffs), weather patterns and predictions, and some minimum understanding of heat pump principles, in particular COP. The operation and the optimisation of the sytem become quite complex, also depending on the optimisation criteria, e.g. minimise energy, cost or CO2, or all of them, and to what proportion. Control strategy matters more than hardware. Consequently, there are some options:
+In summary, a heating system using a heat pump cannot be operated like one with a gas boiler; it needs an awareness of energy prices (e.g. day ahead prices on agile tariffs), weather patterns and predictions, and some minimum understanding of heat pump principles, in particular COP. The operation and the optimisation of the system become quite complex, also depending on the optimisation criteria, e.g. minimise energy, cost or CO2, or some combination thereof. Control strategy matters as much as hardware. Consequently, there are some options:
 
 - DIY: set up [Home Assistant](https://www.home-assistant.io/), automate your home with sensors and actuators, and spend your spare time on optimisation of the home energy system;
-- use the energy management system that comes with a heat pump manufacturer which might even integrate other appliances, e.g. [Bosch Energy Managegment](https://www.bosch.com/stories/smart-home-energy-management-system/);
+- use the energy management system that comes with a heat pump manufacturer which might even integrate other appliances, e.g. [Bosch Energy Management](https://www.bosch.com/stories/smart-home-energy-management-system/);
 - outsource the optimisation to a specialist cloud software provider that manages all of that for you, learning from patterns across a wider user base, e.g. [Havenwise](https://www.havenwise.co.uk/) or [Adia Thermal](https://adiathermal.co.uk/).
+
+
+*Analysis conducted on a 1930s semi-detached house. Code and methodology available at [github.com/PeterWurmsdobler/heat-pump-cost](https://github.com/PeterWurmsdobler/heat-pump-cost).*
 
 
 # References
@@ -172,3 +175,4 @@ In summary, a heating system using a heat pump cannot be operated like one with 
 3. **Heating costs**: The underlying assumption in the comparison is that households would always have an electricity supply; therefore, an electricity standing charge would be due in all cases and will not be included in the comparison. The gas standing charge, however, is added to the gas heating scenario as any other scenario would not incur that charge (assuming a fully electrified home).
 
 4. **Octopus Cosy**: This tariff is location dependent and used to be quite interesting, cosy rate down to 8p/kWh. Now the rates are as follows. Day rate: 33.28p / kWh, Cosy rate (04:00 - 07:00, 13:00 - 16:00, 22:00 - 00:00): 14.53p / kWh, Peak rate (16:00 - 19:00): 51.68p / kWh; Standing charge: 52.19p / day. 
+
