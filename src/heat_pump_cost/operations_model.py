@@ -253,7 +253,7 @@ def create_contour_plot(target_power=Q_TARGET, vf_range=(0.01, 20.0/60.0),
     # Labels and title
     ax.set_xlabel('Flow Rate (l/min)', fontsize=12)
     ax.set_ylabel('Flow Temperature (°C)', fontsize=12)
-    ax.set_title(f'Flow Temperature vs Flow Rate\n(Red line shows Q = {target_kw:.1f} kW)', 
+    ax.set_title(f'Flow Temperature vs Flow Rate\n(Red line shows Q = {target_kw:.2f} kW)', 
                  fontsize=14)
     ax.grid(True, alpha=0.3)
     
@@ -324,12 +324,12 @@ def plot_target_curve(target_power=Q_TARGET, vf_range=(0.01, 20.0/60.0), tf_rang
     
     fig, ax = plt.subplots(figsize=(10, 6))
     
-    ax.plot(vf_curve_min, tf_curve, 'b-', linewidth=2, label=f'Q = {target_kw:.1f} kW')
+    ax.plot(vf_curve_min, tf_curve, 'b-', linewidth=2, label=f'Q = {target_kw:.2f} kW')
     ax.scatter(vf_curve_min, tf_curve, c='blue', s=20, alpha=0.5)
     
     ax.set_xlabel('Flow Rate (l/min)', fontsize=12)
     ax.set_ylabel('Flow Temperature (°C)', fontsize=12)
-    ax.set_title(f'Required Flow Temperature vs Flow Rate for Q = {target_kw:.1f} kW', 
+    ax.set_title(f'Required Flow Temperature vs Flow Rate for Q = {target_kw:.2f} kW', 
                  fontsize=14)
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=11)
