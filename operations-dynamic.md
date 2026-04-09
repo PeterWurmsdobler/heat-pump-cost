@@ -50,29 +50,29 @@ Now that we have a parameterised dynamic model, it is possible to work out the d
 
 ## Gas Boiler Space Heating
 
-Let's assume a traditional daily heating profile as pictured below. During warm-up periods, the boiler operates at full capacity, then the heating schedule: heating off after 22h, on at 6h in the morning with setpoint T_s = 19°C, off at 9h when we leave the house but keep above T_s = 15°C, on again at 17h until 22h with T_s = 19°C. The simplistic relay-based thermostatic controller would do the following:
+Let's assume a traditional daily heating profile as pictured below. The heating schedule is simple: heating off from 22:00 until 06:00, on from 06:00 to 09:00 with setpoint T_s = 19°C, then off again from 09:00 to 17:00 allowing the house to cool naturally, and finally on again from 17:00 to 22:00 with T_s = 19°C. During warm-up periods, the boiler operates at full capacity. The simplistic relay-based thermostatic controller does the following:
 
 - if T_i < T_s, heat at full power until target temperature of T_s is reached; 
 - once T_s is reached, feed-forward heating power Q_h = h * (T_s - T_o);
 - when heating off, let the temperature decay naturally; 
 
 ![Contour Plot](assets/gas_boiler_simulation.png)
-*Figure: January day heated with gas boiler, heat = 34.0 kWh/day, £2.47/day.*
+*Figure: January day heated with gas boiler, heat = 33.2 kWh/day, £2.42/day.*
 
-The gas boiler attempts to deliver its maximum capacity during warm-up periods, but the radiators limit the actual output to approximately **8.2 kW** when the flow temperature reaches 74°C(^1). The simulation shows that with a daily heat delivery of 34.0 kWh, the boiler consumes 35.8 kWh of gas (at 95% efficiency). The total daily cost is £2.47 (£2.12 gas energy + £0.35 gas standing charge)(^2).
+The gas boiler attempts to deliver its maximum capacity during warm-up periods, but the radiators limit the actual output to approximately **8.2 kW** when the flow temperature reaches 74°C(^1). The simulation shows that with a daily heat delivery of 33.2 kWh, the boiler consumes 35.0 kWh of gas (at 95% efficiency). The total daily cost is £2.42 (£2.07 gas energy + £0.35 gas standing charge)(^2).
 
 ## Equivalent Heat Pump Variant
 
 Let's assume we install an equivalent heat pump capable of delivering the same power, then run the heat pump to deliver the same power, which would lead to the same flow and return temperatures at the same flow rate. The COP and the resulting electricity consumption would follow. The flow temperature profile mirrors the power demand: when the house needs rapid heating in the morning and evening, the heat pump must push flow temperatures up to **74°C**, which reduces efficiency. The [Coefficient of Performance](https://github.com/PeterWurmsdobler/heat-pump-cost/cop-estimation.md) varies throughout the day:
 
 - During high-power warm-up periods (T_f ≈ 74°C): COP ≈ **2.6**
-- During steady-state heating (T_f ≈ 27–32°C): COP ≈ **5.0**
-- Overall seasonal average: **SCOP = 3.49**
+- During brief feed-forward periods after warm-up (T_f ≈ 32°C): COP ≈ **5.3**
+- Overall seasonal average: **SCOP = 2.96**
 
-With the power divided by the COP at each timestep, the total electricity consumption is **9.8 kWh/day**. At the January 2026 electricity price of 27.69 p/kWh, this would cost **£2.70/day** (^3). Compared to the gas boiler cost of £2.47/day,  we see that running a heat pump like a gas boiler on a flat tariff costs **9% more** than gas despite the favourable spark gap of 4.67. Conclusion: do not run a heat pump like a gas boiler; Q.E.D.
+With the power divided by the COP at each timestep, the total electricity consumption is **11.2 kWh/day**. At the January 2026 electricity price of 27.69 p/kWh, this costs **£3.11/day** for energy. Compared to the gas boiler total cost of £2.42/day (including gas standing charge), the heat pump total running cost would be £3.66/day (including electricity standing charge), making it **51% more expensive** than gas despite the favourable spark gap of 4.67. The low SCOP of 2.96 falls well below the break-even threshold, making this strategy uneconomical. To make matters worse, such a system would require a heat pump specified for the maximum power, certainly quite expensive too. Conclusion: do not run a heat pump like a gas boiler; Q.E.D.
 
 ![Heat Pump COP Profile](assets/heat_pump_cop_simulation.png)
-*Figure: January day with equivalent heat pump, heat = 34.0 kWh/day, electricity = 9.8 kWh/day, £2.70/day.*
+*Figure: January day with equivalent heat pump, heat = 33.2 kWh/day, electricity = 11.2 kWh/day, £3.11/day energy (total £3.66/day with standing charge).*
 
 ## Smooth Operator Heat Pump
 
@@ -88,12 +88,12 @@ Running the heat pump continuously at low baseline power (800W) during off-peak 
 ![Smooth Heat Pump Operation](assets/smooth_heat_pump_operation.png)
 *Figure: Smooth heat pump operation, heat = 36.7 kWh/day, electricity = 7.1 kWh/day, £1.96/day.*
 
-The flow temperature profile reveals the efficiency advantage of continuous operation: temperatures range from 25–36°C instead of spiking to 74°C. During baseline heating periods, flow temperatures stay around 25–28°C, achieving COP values of 5.8–6.3 (these high values represent theoretical best-case performance at very low temperature lift). During comfort periods, temperatures reach 33–36°C with COP around 4.8–5.2. The overall seasonal COP of **5.18** is much higher than the 3.49 achieved with simple thermostat control. With electricity consumption of **7.1 kWh/day** at 27.69 p/kWh, the daily cost is **£1.96**, cheaper than both the simple thermostat heat pump at £2.70 and the gas boiler cost of £2.47.
+The flow temperature profile reveals the efficiency advantage of continuous operation: temperatures range from 25–36°C instead of spiking to 74°C. During baseline heating periods, flow temperatures stay around 25–28°C, achieving COP values of 5.8–6.3 (these high values represent theoretical best-case performance at very low temperature lift). During comfort periods, temperatures reach 33–36°C with COP around 4.8–5.2. The overall seasonal COP of **5.18** is much higher than the 2.96 achieved with simple thermostat control. With electricity consumption of **7.1 kWh/day** at 27.69 p/kWh, the daily cost is **£1.96**, cheaper than both the simple thermostat heat pump at £3.11 and the gas boiler cost of £2.42.
 
 ![Smooth Heat Pump COP](assets/smooth_heat_pump_cop.png)
 *Figure: Continuous smooth operation maintains low flow temperatures and high COP throughout the day.*
 
-This demonstrates that heat pump economics depend critically on control strategy: continuous operation with optimised flow temperatures and predictive pre-heating transforms the heat pump from 9% more expensive than gas to **20% cheaper**, while maintaining better comfort throughout the day. The economics could be improved further by moderately upgrading radiators in order to allow lowering the flow temperature even further, hence increasing the COP and decreasing electricity consumption.
+This demonstrates that heat pump economics depend critically on control strategy: continuous operation with optimised flow temperatures and predictive pre-heating transforms the heat pump from 51% more expensive than gas to **19% cheaper**, while maintaining better comfort throughout the day. The economics could be improved further by moderately upgrading radiators in order to allow lowering the flow temperature even further, hence increasing the COP and decreasing electricity consumption. On the flipside, a heat pump rated a bit more than the average power is needed, again cheaper.
 
 ## Playing the Dynamic Tariffs
 
@@ -136,22 +136,22 @@ There is another factor to be taken into account in colder areas: defrost cycles
 
 Across the various heating strategies simulated, several key insights emerge about the economics and operation of heat pumps compared to gas boilers. All costs include heating energy and, for gas heating, the gas standing charge. The electricity standing charge is excluded from all scenarios as all households incur this charge regardless of heating method. The operating costs for January 2026 conditions (T_o = 5°C average) are:
 
-- **Gas boiler (traditional on/off control)**: £2.47/day  
-  Heat: 34.0 kWh/day, Gas: 35.8 kWh/day, Cost: £2.12 gas energy + £0.35 gas SC
+- **Gas boiler (simple on/off control, heating 6-9am and 17-22h only)**: £2.42/day  
+  Heat: 33.2 kWh/day, Gas: 35.0 kWh/day, Cost: £2.07 gas energy + £0.35 gas SC
 
-- **Heat pump with simple thermostat control (mimicking gas boiler operation)**: £2.70/day (+9% vs gas)  
-  Heat: 34.0 kWh/day, Electricity: 9.8 kWh/day, SCOP: 3.49, Cost: £2.70 energy  
-  Flow temperatures spike to 74°C, reducing efficiency during warm-up periods.
+- **Heat pump with simple thermostat control (mimicking gas boiler operation)**: £3.11/day (+51% vs gas)  
+  Heat: 33.2 kWh/day, Electricity: 11.2 kWh/day, SCOP: 2.96, Cost: £3.11 energy  
+  Flow temperatures spike to 74°C during warm-up periods. The low SCOP of 2.96 falls well below the spark gap of 4.67, making this strategy uneconomical.
 
-- **Heat pump with smooth continuous operation (flat tariff)**: £1.96/day (−20% vs gas)  
+- **Heat pump with smooth continuous operation (flat tariff)**: £1.96/day (−19% vs gas)  
   Heat: 36.7 kWh/day, Electricity: 7.1 kWh/day, SCOP: 5.18, Cost: £1.96 energy  
   Continuous baseline heating, flow temperatures 25–36°C, superior comfort and COP.
 
-- **Heat pump with tariff-optimised operation (Octopus Cosy)**: £2.15/day (−13% vs gas)  
+- **Heat pump with tariff-optimised operation (Octopus Cosy)**: £2.15/day (−11% vs gas)  
   Heat: 41.3 kWh/day, Electricity: 8.5 kWh/day, SCOP: 4.85, Cost: £2.15 energy  
   Pre-heating during cheap periods (14.53p), flow temperatures up to 41°C when electricity is cheap.
 
-The smooth continuous heat pump operation achieves the lowest cost of all scenarios at £1.96/day, actually **20% cheaper than gas heating** while providing superior comfort. This demonstrates that heat pumps can not only match but beat gas economics when operated intelligently with optimised flow temperatures and predictive control. The tariff-optimised strategy on Octopus Cosy is **13% cheaper than gas**.
+The simple thermostat heat pump operation (mimicking a gas boiler) is the worst performer with a total running cost of £3.66/day (including standing charge), **51% more expensive than gas heating**. This clearly demonstrates that heat pumps cannot be operated like gas boilers. In contrast, the smooth continuous heat pump operation achieves the lowest cost of all scenarios at £1.96/day, **19% cheaper than gas heating** while providing superior comfort. This demonstrates that heat pumps can beat gas economics when operated intelligently with optimised flow temperatures and predictive control. The tariff-optimised strategy on Octopus Cosy is **11% cheaper than gas**.
 
 
 # Conclusion

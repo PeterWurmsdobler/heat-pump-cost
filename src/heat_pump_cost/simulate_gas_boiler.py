@@ -3,7 +3,7 @@
 Heating schedule (starting at 22:00):
   22:00 – 06:00  Heating OFF (house cools freely)
   06:00 – 09:00  Setpoint T_s = 19 °C  (full power until reached, then feed-forward)
-  09:00 – 17:00  Setpoint T_s = 15 °C  (reduced / away setpoint)
+  09:00 – 17:00  Heating OFF (house cools freely)
   17:00 – 22:00  Setpoint T_s = 19 °C  (evening warm-up)
 
 Model parameters (from April 2026 thermal identification):
@@ -47,7 +47,7 @@ GAS_STANDING_CHARGE = 0.3509        # £/day
 SCHEDULE = [
     (0,   8,  None),   # 22:00 – 06:00  OFF
     (8,  11,  19.0),   # 06:00 – 09:00  T_s = 19 °C
-    (11, 19,  15.0),   # 09:00 – 17:00  T_s = 15 °C  (away)
+    (11, 19,  None),   # 09:00 – 17:00  OFF (natural decay)
     (19, 24,  19.0),   # 17:00 – 22:00  T_s = 19 °C
 ]
 
