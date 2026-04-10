@@ -1,6 +1,6 @@
 # Quantitative Analysis of Dynamic Heat Pump Operation for Domestic Heating
 
-The preceding story, [How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations ](https://medium.com/@peter-wurmsdobler/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd), addresses the implications of the spark gap on capital and operational expenses due to a nearly unavoidable upgrade in radiator capacity in order to keep the flow temperature low and the [Coefficient of Performance](https://en.wikipedia.org/wiki/Coefficient_of_performance) (COP) high; there, a simple static thermal analysis looks at average quantities for heat loss and temperature for a heat pump in stationary operation. The situation changes if dynamic aspects are taken into account for the operation of the heat pump, both in terms of temperature profiles and electricity tariffs. As presented in sources such as ["So You're Thinking About a Heat Pump: The UK Homeowner's Guide to Heat Pumps"](https://www.amazon.co.uk/Youre-Thinking-About-Heat-Pump/dp/B0GK7H511K/), heat pumps require different operating strategies compared to gas boilers most households are used to. The objective of this story is to demonstrate quantitatively how control and operation strategy impacts the economics of domestic heat pump heating. 
+The preceding story, [How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations ](https://medium.com/@peter-wurmsdobler/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd), addresses the implications of the spark gap on capital and operational expenses due to a nearly unavoidable upgrade in radiator capacity in order to keep the flow temperature low and the [Coefficient of Performance](https://en.wikipedia.org/wiki/Coefficient_of_performance) (COP) high; there, a simple static thermal analysis looks at average quantities for heat loss and temperature for a heat pump in stationary operation. The situation changes if dynamic aspects are taken into account for the operation of the heat pump, both in terms of temperature profiles and electricity tariffs. As presented in sources such as ["So You're Thinking About a Heat Pump: The UK Homeowner's Guide to Heat Pumps"](https://www.amazon.co.uk/Youre-Thinking-About-Heat-Pump/dp/B0GK7H511K/), heat pumps require different operating strategies compared to the gas boilers that most households are used to. The objective of this story is to demonstrate quantitatively how control and operation strategy impacts the economics of domestic heat pump heating. 
 
 ![Cat prefers consistent heat](assets/smooth-operator.png)
 *Figure: Our cat would probably prefer the smooth operation of a heating system with a heat pump.*
@@ -12,33 +12,33 @@ A stationary model assumes all process variables to be constant at a given point
 
 ## Dynamic Thermal Model
 
-A dynamic model reflects the time-variant behaviour of a system. Here, I would like to use the simplest conceivable model, a linear first-order model with two time-invariant parameters: the thermal capacity C of the entire house, and the specific heat loss, or Heat Transfer Coefficient (HTC), or h. The following process variables will be considered: internal temperature T_i, and outside temperature T_o; heat is supplied as Q_h at flow temperature T_f and return temperature T_r, then transferred to the internal thermal mass as Q_r through radiators; in addition, occupancy and appliances are accounted for with a heating power of Q_b. The house loses heat as Q_l through the building fabric determined by h.
+A dynamic model reflects the time-variant behaviour of a system. Here, I would like to use the simplest conceivable model, a linear time-invariant (LTI) first-order model with two parameters: the thermal capacity C of the entire house, and the specific heat loss, or Heat Transfer Coefficient (HTC), or h. The following process variables will be considered: internal temperature T_i, and outside temperature T_o; heat is supplied as Q_h at flow temperature T_f and return temperature T_r, then transferred to the internal thermal mass as Q_r through radiators; in addition, occupancy and appliances are accounted for with a heating power of Q_b. The house loses heat as Q_l through the building fabric determined by h.
 
 ![Simple dynamic thermal model for house](assets/house-model-dynamic.png)
 *Figure: Simple representation of a simple dynamic house model with heat source, capacity and losses.*
 
-Differential equations are most commonly used to describe dynamic systems in combination with functional relationships between process variables; in this case, with the heating fluid (water) density ρ, its specific thermal capacity c_p and a flow rate V_f, the characteristic radiator constant K and radiative exponent n, and finally the transfer coefficient h, the equations are:
+Ordinary differential equations (ODEs) are most commonly used to describe dynamic systems in combination with functional relationships between process variables; in this case, with the heating fluid (water) density ρ, its specific thermal capacity c_p and a flow rate V_f, the characteristic radiator constant K and radiator exponent n, and finally the transfer coefficient h, the equations are:
 
 Q_h = V_f * ρ * c_p * (T_f - T_r)<br>
 Q_r = K * ((T_f + T_r)/2 - T_i)^n<br>
 Q_l = h * (T_i - T_o)<br>
 C * dT_i/dt = Q_r + Q_b - Q_l
 
-[How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations ](https://medium.com/@peter-wurmsdobler/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd) has identified the values of some parameters for the dynamic analysis: K = 71.2 W/K^1.2 (from manufacturer radiator specifications, see [Radiator Survey](radiator-survey.md)) with n = 1.2, ρ = 1 kg/l and c_p = 4.18 kJ/kg/K; V_f is assumed to be constant at 20 l/min for this analysis; heat power is modulated through the flow temperature only. Also note, the heat balance for the radiator circuit (no losses in short pipework), is Q_h = Q_r. For the heat loss coefficient, we have two values as prior: h = 244 W/K from first principles, or h = 188 W/K from recorded power consumption; the appliance/occupancy heat source is about Q_b = 0.5 kW but could be more; C, the house's thermal capacity is completely unknown.
+[How the Spark Gap Drives Radiator Upgrades for Heat Pump Installations ](https://medium.com/@peter-wurmsdobler/how-the-spark-gap-drives-radiator-upgrades-for-heat-pump-installations-1d3b098b29fd) has identified the values of some parameters for the dynamic analysis: K = 71.2 W/K^1.2 (from manufacturer radiator specifications, see [Radiator Survey](https://github.com/PeterWurmsdobler/heat-pump-cost/blob/main/radiator-survey.md)) with n = 1.2, ρ = 1 kg/l and c_p = 4.18 kJ/kg/K; V_f is assumed to be constant at 20 l/min for this analysis; heat power is modulated through the flow temperature only. Also note, the heat balance for the radiator circuit (no losses in short pipework), is Q_h = Q_r. For the heat loss coefficient, we have two values as prior: h = 244 W/K from first principles, or h = 188 W/K from recorded power consumption; the appliance/occupancy heat source is about Q_b = 0.5 kW but could be more; C, the house's thermal capacity is completely unknown.
 
 ## Model Parameter Identification
 
-An entire domain in control systems analysis and design is dedicated to model parameter identification, usually based on recorded data, or data obtained through a system response on a stimulus. To that end, we consider a simplified model that eliminates the heating system internals, but accounts for some background power Q_b (appliances, occupancy and other sources) and radiator power Q_r:
+An entire domain in control systems analysis and design is dedicated to model parameter identification, usually based on recorded data, or data obtained through a system response on a stimulus. To that end, we consider a simplified model that eliminates the heating system internals, but accounts for some background power Q_b (appliances, occupancy and other sources) and radiator power Q_r as the stimulus:
 
 C * dT_i/dt = -h * (T_i - T_o) + Q_b + Q_r
 
 In practical terms, we need to set up some experiments and record data. To obtain the internal temperature, a [Raspberry PicoPi Temperature Logger](https://github.com/LeonardWurmsdobler/PicoTemperatureLogger) records indoor temperature measurements. Outside temperatures are obtained from the [Cambridge Raw Daily Weather Data](https://www.cl.cam.ac.uk/weather/index-daily-text.html). We consider three periods:
 
-- "2026-04-04 01:00:00" to "2026-04-04 06:00:00", outside T_o = 7°C, heating off, i.e. Q_r = 0, and Q_b ~0.5kW
-- "2026-04-05 22:45:00" to "2026-04-06 04:20:00", outside T_o = 3°C, heating off, i.e. Q_r = 0, and Q_b ~0.5kW
-- "2026-04-06 06:30:00" to "2026-04-06 08:15:00", outside T_o = 3°C - 7°C, heating on full power, i.e. Q_r > 0 kW, and Q_b ~0.5kW
+- "2026-04-04 01:00:00" to "2026-04-04 06:00:00", outside T_o = 7°C, heating off, i.e. Q_r = 0, and Q_b ~0.5 kW
+- "2026-04-05 22:45:00" to "2026-04-06 04:20:00", outside T_o = 3°C, heating off, i.e. Q_r = 0, and Q_b ~0.5 kW
+- "2026-04-06 06:30:00" to "2026-04-06 08:15:00", outside T_o = 3°C - 7°C, heating on full power, i.e. Q_r > 0 kW, and Q_b ~0.5 kW
 
-These system parameter identification tools are employed to obtain estimates for the missing parameters, C, h and Q_b; results as shown below, details on [Thermal Parameter Identification for the Dynamic House Model](https://github.com/PeterWurmsdobler/heat-pump-cost/system-identification.md). The parameters are found to be C = 21.0 MJ/K, h = 142.6 W/K, and the associated time constant τ = 146,937 s  (40.8 h), as well as Q_b = 500 W and Q_r = 4 kW during the morning heating period. Note, the time constant of 40.8 h means that the house, if left unheated, would cool down by 63% towards the constant outside temperature after one time constant (40.8 h, roughly 1.7 days). 
+System parameter identification tools are employed to obtain estimates for the missing parameters, C, h and Q_b; results as shown below, details on [Thermal Parameter Identification for the Dynamic House Model](https://github.com/PeterWurmsdobler/heat-pump-cost/blob/main/system-identification.md). The parameters are found to be C = 21.0 MJ/K, h = 142.6 W/K, and the associated time constant τ = C/h = 147,265 s (40.9 h), as well as Q_b = 500 W and Q_r = 4 kW during the morning heating period. Note, the time constant of 40.9 h means that the house, if left unheated, would cool down by 63% towards the constant outside temperature after one time constant (40.9 h, roughly 1.7 days). 
 
 ![Contour Plot](assets/temperature_plot.png)
 *Figure: measured and estimated inside temperature based on the model in three conditions.*
@@ -59,20 +59,20 @@ Let's assume a traditional daily heating profile as pictured below. The heating 
 ![Contour Plot](assets/gas_boiler_simulation.png)
 *Figure: January day heated with gas boiler, heat = 33.2 kWh/day, £2.42/day.*
 
-The gas boiler attempts to deliver its maximum capacity during warm-up periods, but the radiators limit the actual output to approximately **8.2 kW** when the flow temperature reaches 74°C(^1). The simulation shows that with a daily heat delivery of 33.2 kWh, the boiler consumes 35.0 kWh of gas (at 95% efficiency). The total daily cost is £2.42 (£2.07 gas energy + £0.35 gas standing charge)(^2).
+The gas boiler delivers its maximum capacity during warm-up periods, approximately **8.2 kW** when the flow temperature reaches 74°C(^1). The simulation shows that with a daily heat delivery of 33.2 kWh, the boiler consumes 35.0 kWh of gas (at 95% efficiency). The total daily cost is £2.42 (£2.07 gas energy + £0.35 gas standing charge)(^2).
 
 ## Equivalent Heat Pump Variant
 
-Let's assume we install an equivalent heat pump capable of delivering the same power, then run the heat pump to deliver the same power, which would lead to the same flow and return temperatures at the same flow rate. The COP and the resulting electricity consumption would follow. The flow temperature profile mirrors the power demand: when the house needs rapid heating in the morning and evening, the heat pump must push flow temperatures up to **74°C**, which reduces efficiency. The [Coefficient of Performance](https://github.com/PeterWurmsdobler/heat-pump-cost/cop-estimation.md) varies throughout the day:
+Let's assume we install an equivalent heat pump capable of delivering the same power, then run the heat pump to deliver the same power, which would lead to the same flow and return temperatures at the same flow rate. The COP and the resulting electricity consumption would follow. The flow temperature profile mirrors the power demand: when the house needs rapid heating in the morning and evening, the heat pump must push flow temperatures up to **74°C**, which reduces efficiency. The COP according to my [COP estimation](https://github.com/PeterWurmsdobler/heat-pump-cost/blob/main/cop-estimation.md) varies throughout the day:
 
 - During high-power warm-up periods (T_f ≈ 74°C): COP ≈ **2.6**
 - During brief feed-forward periods after warm-up (T_f ≈ 32°C): COP ≈ **5.3**
 - Overall seasonal average: **SCOP = 2.96**
 
-With the power divided by the COP at each timestep, the total electricity consumption is **11.2 kWh/day**. At the January 2026 electricity price of 27.69 p/kWh, this costs **£3.11/day** for energy. Compared to the gas boiler total cost of £2.42/day (including gas standing charge), the heat pump total running cost would be £3.66/day (including electricity standing charge), making it **51% more expensive** than gas despite the favourable spark gap of 4.67. The low SCOP of 2.96 falls well below the break-even threshold, making this strategy uneconomical. To make matters worse, such a system would require a heat pump specified for the maximum power, certainly quite expensive too. Conclusion: do not run a heat pump like a gas boiler; Q.E.D.
+With the heating power divided by the COP at each period, the total electricity consumption is **11.2 kWh/day**. At the January 2026 electricity price of 27.69 p/kWh, this costs **£3.11/day** for energy. Compared to the gas boiler cost of £2.42/day (energy plus gas standing charge), the heat pump energy cost of £3.11/day makes it **29% more expensive** than gas despite the current spark gap of 4.67. The low SCOP of 2.96 falls below the break-even threshold, making this strategy uneconomical. Such a system would also require a heat pump specified for the maximum power, not the average, which increases capital expenditure. Conclusion: do not run a heat pump like a gas boiler; Q.E.D.
 
 ![Heat Pump COP Profile](assets/heat_pump_cop_simulation.png)
-*Figure: January day with equivalent heat pump, heat = 33.2 kWh/day, electricity = 11.2 kWh/day, £3.11/day energy (total £3.66/day with standing charge).*
+*Figure: January day with equivalent heat pump, heat = 33.2 kWh/day, electricity = 11.2 kWh/day, £3.11/day.*
 
 ## Smooth Operator Heat Pump
 
@@ -88,12 +88,12 @@ Running the heat pump continuously at low baseline power (800W) during off-peak 
 ![Smooth Heat Pump Operation](assets/smooth_heat_pump_operation.png)
 *Figure: Smooth heat pump operation, heat = 36.7 kWh/day, electricity = 7.1 kWh/day, £1.96/day.*
 
-The flow temperature profile reveals the efficiency advantage of continuous operation: temperatures range from 25–36°C instead of spiking to 74°C. During baseline heating periods, flow temperatures stay around 25–28°C, achieving COP values of 5.8–6.3 (these high values represent theoretical best-case performance at very low temperature lift). During comfort periods, temperatures reach 33–36°C with COP around 4.8–5.2. The overall seasonal COP of **5.18** is much higher than the 2.96 achieved with simple thermostat control. With electricity consumption of **7.1 kWh/day** at 27.69 p/kWh, the daily cost is **£1.96**, cheaper than both the simple thermostat heat pump at £3.11 and the gas boiler cost of £2.42.
+The flow temperature profile reveals the efficiency advantage of continuous operation: flow temperatures range from 25–36°C instead of spiking to 74°C. During baseline heating periods, flow temperatures stay around 25–28°C, achieving COP values of 5.8–6.3 (these high values represent theoretical best-case performance at very low temperature lift). During comfort periods, temperatures reach 33–36°C with COP around 4.8–5.2. The overall seasonal COP of **5.18** is higher than the 2.96 achieved with simple thermostat control. With electricity consumption of **7.1 kWh/day** at 27.69 p/kWh, the daily cost is **£1.96**, cheaper than both the simple thermostat heat pump at £3.11 and the gas boiler cost of £2.42.
 
 ![Smooth Heat Pump COP](assets/smooth_heat_pump_cop.png)
 *Figure: Continuous smooth operation maintains low flow temperatures and high COP throughout the day.*
 
-This demonstrates that heat pump economics depend critically on control strategy: continuous operation with optimised flow temperatures and predictive pre-heating transforms the heat pump from 51% more expensive than gas to **19% cheaper**, while maintaining better comfort throughout the day. The economics could be improved further by moderately upgrading radiators in order to allow lowering the flow temperature even further, hence increasing the COP and decreasing electricity consumption. On the flipside, a heat pump rated a bit more than the average power is needed, again cheaper.
+This demonstrates that heat pump economics depend critically on control strategy: continuous operation with optimised flow temperatures and predictive pre-heating transforms the heat pump from 29% more expensive than gas to **19% cheaper**, while maintaining better comfort throughout the day. The economics could be improved further by moderately upgrading radiators in order to allow lowering the flow temperature even further, hence increasing the COP and decreasing electricity consumption. In addition, a heat pump rated for average rather than peak power is sufficient, reducing capital expenditure further.
 
 ## Playing the Dynamic Tariffs
 
@@ -106,9 +106,9 @@ Suppose electricity does not incur the same cost throughout the day, but rather 
 ![Octopus Cosy Tariff](assets/octopus_cosy_tariff.png)
 *Figure: Octopus Energy Cosy tariff structure showing three rate periods throughout the day.*
 
-The tariff structure creates a clear economic incentive to shift heating load from the evening peak (16:00–19:00) to the cheaper periods. With a dynamic model of the house thermal response, a cost-optimising controller can exploit this price variation by using the building's thermal mass as a "battery", pre-heating with higher flow temperatures during cheap periods and coasting through expensive ones. The optimisation strategy maintains comfort bounds (17–20°C acceptable range throughout) while minimising cost:
+The tariff structure creates an economic incentive to shift heating load from the evening peak (16:00–19:00) to the cheaper periods. With a dynamic model of the house thermal response, a cost-optimising controller can exploit this price variation by using the building's thermal mass as a "battery", pre-heating with higher flow temperatures during cheap periods and coasting through expensive ones. The optimisation strategy maintains comfort bounds (17–20°C acceptable range throughout) while minimising cost:
 
-- **During cheap periods** (04:00–07:00, 13:00–16:00, 22:00–00:00): Heat at 2.4–2.7 kW with flow temperatures up to 50–55°C. This accepts lower COP temporarily to maximise thermal energy stored in the building fabric while electricity is cheap.
+- **During cheap periods** (04:00–07:00, 13:00–16:00, 22:00–00:00): Heat at 2.4–2.7 kW with flow temperatures up to 38–41°C (capped at 55°C). This accepts lower COP temporarily to maximise thermal energy stored in the building fabric while electricity is cheap.
 - **During peak period** (16:00–19:00): Reduce power to 1.4–1.9 kW, relying on stored thermal energy as temperature gradually drifts toward the lower bound.
 - **During standard periods**: Maintain moderate heating (1.5–2.0 kW) with flow temperatures around 38–45°C to balance efficiency and comfort.
 
@@ -139,9 +139,9 @@ Across the various heating strategies simulated, several key insights emerge abo
 - **Gas boiler (simple on/off control, heating 6-9am and 17-22h only)**: £2.42/day  
   Heat: 33.2 kWh/day, Gas: 35.0 kWh/day, Cost: £2.07 gas energy + £0.35 gas SC
 
-- **Heat pump with simple thermostat control (mimicking gas boiler operation)**: £3.11/day (+51% vs gas)  
+- **Heat pump with simple thermostat control (mimicking gas boiler operation)**: £3.11/day (+29% vs gas)  
   Heat: 33.2 kWh/day, Electricity: 11.2 kWh/day, SCOP: 2.96, Cost: £3.11 energy  
-  Flow temperatures spike to 74°C during warm-up periods. The low SCOP of 2.96 falls well below the spark gap of 4.67, making this strategy uneconomical.
+  Flow temperatures spike to 74°C during warm-up periods. The low SCOP of 2.96 falls below the spark gap of 4.67, making this strategy uneconomical.
 
 - **Heat pump with smooth continuous operation (flat tariff)**: £1.96/day (−19% vs gas)  
   Heat: 36.7 kWh/day, Electricity: 7.1 kWh/day, SCOP: 5.18, Cost: £1.96 energy  
@@ -151,7 +151,7 @@ Across the various heating strategies simulated, several key insights emerge abo
   Heat: 41.3 kWh/day, Electricity: 8.5 kWh/day, SCOP: 4.85, Cost: £2.15 energy  
   Pre-heating during cheap periods (14.53p), flow temperatures up to 41°C when electricity is cheap.
 
-The simple thermostat heat pump operation (mimicking a gas boiler) is the worst performer with a total running cost of £3.66/day (including standing charge), **51% more expensive than gas heating**. This clearly demonstrates that heat pumps cannot be operated like gas boilers. In contrast, the smooth continuous heat pump operation achieves the lowest cost of all scenarios at £1.96/day, **19% cheaper than gas heating** while providing superior comfort. This demonstrates that heat pumps can beat gas economics when operated intelligently with optimised flow temperatures and predictive control. The tariff-optimised strategy on Octopus Cosy is **11% cheaper than gas**.
+The simple thermostat heat pump operation (mimicking a gas boiler) is the worst performer with an energy cost of £3.11/day, **29% more expensive than gas heating**. This demonstrates that heat pumps cannot be operated like gas boilers. In contrast, the smooth continuous heat pump operation achieves the lowest cost of all scenarios at £1.96/day, **19% cheaper than gas heating** while providing superior comfort. This demonstrates that heat pumps can beat gas economics when operated intelligently with optimised flow temperatures and predictive control. The tariff-optimised strategy on Octopus Cosy is **11% cheaper than gas**.
 
 
 # Conclusion
@@ -168,7 +168,7 @@ In summary, a heating system using a heat pump cannot be operated like one with 
 
 # References
 
-1. **Boiler efficiency:** The Viessmann Vitodens 222-F condensing gas boiler achieves 95% efficiency under typical operating conditions and a rated power of 25kW; radiator constant K = 71.2 W/K^1.2 (from manufacturer specifications, see [Radiator Survey](https://github.com/PeterWurmsdobler/heat-pump-cost/radiator-survey.md)), flow temperature limit of 75°C and 20l/min flow rate yield Q_r ≈ 8.2 kW. The simulations use this radiator capacity limit. Most boiler power is needed for DHW.
+1. **Boiler efficiency:** The Viessmann Vitodens 222-F condensing gas boiler achieves 95% efficiency under typical operating conditions and a rated power of 25kW; radiator constant K = 71.2 W/K^1.2 (from manufacturer specifications, see [Radiator Survey](https://github.com/PeterWurmsdobler/heat-pump-cost/radiator-survey.md)), flow temperature limit of 75°C and 20 l/min flow rate yield Q_r ≈ 8.2 kW. The simulations use this radiator capacity limit. Most boiler power is needed for DHW.
 
 2. **Energy costs**: as of January 2026, Ofgem energy price cap for a typical dual-fuel household paying by Direct Debit sets electricity at 27.69p per kWh with a 54.75p daily standing charge, and gas at 5.93p per kWh with a 35.09p daily standing charge. 
 

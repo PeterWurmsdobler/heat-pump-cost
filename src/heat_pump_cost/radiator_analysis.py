@@ -167,7 +167,7 @@ def plot_performance_vs_power(k_rad=K_CURRENT, vf=VF_FIXED,
     ax1.set_xlabel('Heating Power (kW)', fontsize=12)
     ax1.set_ylabel('Flow Temperature (°C)', fontsize=12, color=color1)
     line1 = ax1.plot(powers_kw, flow_temps, color=color1, linewidth=2, 
-                     label=f'Flow Temperature at T$_o$ = {TO}°C (K = {k_rad:.1f} W/K$^{{{N_RAD}}}$)')
+                     label=f'Flow Temperature (K = {k_rad:.1f} W/K$^{{{N_RAD}}}$, T$_i$ = {TI:.0f}°C)')
     ax1.tick_params(axis='y', labelcolor=color1)
     ax1.grid(True, alpha=0.3)
     
@@ -247,7 +247,7 @@ def plot_performance_vs_power(k_rad=K_CURRENT, vf=VF_FIXED,
                                fontsize=9, color=color2)
     
     # Title
-    fig.suptitle(f'Flow Temperature and COP vs Heating Power\n(V$_f$ = {vf*60:.0f} l/min, flow temp at T$_o$ = 5°C)', 
+    fig.suptitle(f'Flow Temperature and COP vs Heating Power\n(K = {k_rad:.1f} W/K$^{{{N_RAD}}}$, V$_f$ = {vf*60:.0f} l/min, T$_i$ = {TI:.0f}°C)', 
                 fontsize=13, y=0.98)
     
     # Combined legend — move to lower left

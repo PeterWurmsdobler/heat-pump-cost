@@ -5,7 +5,7 @@ A collection of quantitative analyses — each backed by Python models — explo
 1. **[Considerations for the Fabric First vs Heat Pump First Debate](considerations.md)** — capital and lifecycle cost optimisation across insulation and heat pump options.
 2. **[Impediments to UK Heat Pump Adoption and Possible Solutions](impediments.md)** — qualitative analysis of capital cost, space requirements, and the spark gap.
 3. **[How the Spark Gap Drives the Radiator Upgrades for a Heat Pump Installation](operations-static.md)** — steady-state thermal modelling of flow temperature, COP, and required radiator capacity.
-4. **[Quantitative Analysis of Dynamic Heat Pump Operation for Domestic Heating](operations-dynamic.md)** — dynamic thermal modelling showing how control strategy impacts heat pump economics, comparing gas boiler, simple thermostat, smooth continuous, and tariff-optimized operation.
+4. **[Quantitative Analysis of Dynamic Heat Pump Operation for Domestic Heating](operations-dynamic.md)** — dynamic thermal modelling showing how control strategy impacts heat pump economics, comparing gas boiler, simple thermostat, smooth continuous, and tariff-optimised operation.
 
 ## Project Structure
 
@@ -171,14 +171,14 @@ python -m heat_pump_cost.radiator_analysis > results.txt
 
 **File:** [operations-dynamic.md](operations-dynamic.md)
 
-Uses a first-order dynamic thermal model with parameters identified from recorded temperature data (C = 21.0 MJ/K, h = 142.6 W/K, τ = 40.8 h) to simulate four heating strategies for a January day (T_o = 5°C):
+Uses a first-order dynamic thermal model with parameters identified from recorded temperature data (C = 21.0 MJ/K, h = 142.6 W/K, τ = 40.9 h) to simulate four heating strategies for a January day (T_o = 5°C):
 
 1. **Gas boiler** — traditional on/off control with morning and evening warm-up periods
 2. **Simple thermostat heat pump** — mimics gas boiler operation, shows inefficiency of high flow temperatures
-3. **Smooth continuous heat pump** — optimized continuous operation with baseline heating, achieves 7% lower cost than gas
+3. **Smooth continuous heat pump** — optimised continuous operation with baseline heating, achieves 19% cheaper than gas
 4. **Tariff-optimized heat pump** — exploits Octopus Cosy dynamic pricing by pre-heating during cheap periods
 
-Demonstrates that control strategy is critical: same hardware ranges from 18% more expensive than gas (simple thermostat) to 7% cheaper (smooth continuous operation).
+Demonstrates that control strategy is critical: same hardware ranges from 29% more expensive than gas (simple thermostat) to 19% cheaper (smooth continuous operation).
 
 ### CLI Commands
 
@@ -204,7 +204,7 @@ Simulates traditional gas boiler operation with schedule:
 
 **Results:** 33.2 kWh/day heat, 35.0 kWh/day gas, £2.42/day (gas energy + gas SC)
 
-**Equivalent heat pump (same heating pattern):** 11.2 kWh/day electricity, SCOP 2.96, £3.11/day (51% more expensive, demonstrating why heat pumps shouldn't mimic gas boiler operation)
+**Equivalent heat pump (same heating pattern):** 11.2 kWh/day electricity, SCOP 2.96, £3.11/day (29% more expensive, demonstrating why heat pumps shouldn't mimic gas boiler operation)
 
 **Outputs:**
 - `assets/gas_boiler_simulation.png` — temperature and power profiles
@@ -216,7 +216,7 @@ Simulates traditional gas boiler operation with schedule:
 heat-pump-smooth
 ```
 
-Simulates optimized continuous operation:
+Simulates optimised continuous operation:
 - Baseline 800W heating during night/away periods
 - Maintains 17–19°C throughout
 - Max flow temperature 45°C
@@ -235,7 +235,7 @@ heat-pump-tariff
 ```
 
 Simulates cost optimization for Octopus Cosy dynamic tariff:
-- Cheap periods (14.53p): aggressive pre-heating at up to 55°C
+- Cheap periods (14.53p): pre-heating with flow temperatures up to 38–41°C (capped at 55°C)
 - Peak period (51.68p): minimal heating, coast on stored energy
 - Day periods (33.28p): moderate operation
 
@@ -257,7 +257,7 @@ All identified from April 2026 experiments:
 | `C` | 21.0 MJ/K | House thermal capacity |
 | `h` | 142.6 W/K | Heat transfer coefficient |
 | `Q_b` | 500 W | Background heat (appliances, occupancy) |
-| `τ` | 40.8 hours | Thermal time constant (C/h) |
+| `τ` | 40.9 hours | Thermal time constant (C/h) |
 | `K` | 71.2 W/K^1.2 | Radiator constant |
 | `n` | 1.2 | Radiator exponent |
 
