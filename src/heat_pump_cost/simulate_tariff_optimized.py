@@ -221,6 +221,7 @@ def simulate_tariff_optimized(
     # Initialize arrays
     t_h_arr = np.zeros(n_steps)
     T_i_arr = np.zeros(n_steps)
+    T_s_arr = np.zeros(n_steps)
     T_min_arr = np.zeros(n_steps)
     T_max_arr = np.zeros(n_steps)
     T_f_arr = np.zeros(n_steps)
@@ -241,6 +242,14 @@ def simulate_tariff_optimized(
         T_min, T_max = get_comfort_bounds(t_h)
         T_min_arr[i] = T_min
         T_max_arr[i] = T_max
+        
+        # Setpoint for display (comfort periods: 19°C, setback: 17°C)
+        # Comfort periods from midnight: 6-9h, 17-22h
+        if (6.0 <= t_h < 9.0) or (17.0 <= t_h < 22.0):
+            T_s = 19.0
+        else:
+            T_s = 17.0
+        T_s_arr[i] = T_s
         
         price = get_electricity_price(t_h)
         price_arr[i] = price
@@ -280,6 +289,7 @@ def simulate_tariff_optimized(
     return {
         "t_h": t_h_arr,
         "T_i": T_i_arr,
+        "T_s": T_s_arr,
         "T_min": T_min_arr,
         "T_max": T_max_arr,
         "T_f": T_f_arr,
@@ -360,6 +370,7 @@ def plot_tariff_optimized_operation(
     """Plot indoor temperature and heat power for tariff-optimized operation."""
     t = result["t_h"]
     T_i = result["T_i"]
+    T_s = result["T_s"]
     T_min = result["T_min"]
     T_max = result["T_max"]
     T_o = ThermalSystemParameters().T_o
@@ -370,7 +381,8 @@ def plot_tariff_optimized_operation(
     # Left axis: temperatures with comfort bounds
     ax.fill_between(t, T_min, T_max, alpha=0.15, color="green", label="Comfort range")
     l1, = ax.plot(t, T_i, color="#1f77b4", linewidth=2, label="T_i  (indoor)")
-    l2 = ax.axhline(T_o, color="grey", linewidth=1, linestyle=":", label=f"T_o = {T_o:.0f} °C")
+    l2, = ax.plot(t, T_s, color="#d62728", linewidth=1.5, linestyle="--",
+                  drawstyle="steps-post", label="T_s  (setpoint)")
     ax.set_ylabel("Temperature (°C)", fontsize=11)
     ax.set_ylim(12, 22)
     ax.set_title(

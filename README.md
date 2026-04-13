@@ -1,11 +1,12 @@
 # Heat Pump Cost Analysis
 
-A collection of quantitative analyses — each backed by Python models — exploring the economics and practicalities of installing an air-source heat pump in a 1930s UK semi-detached house. Four articles are supported:
+A collection of quantitative analyses — each backed by Python models — exploring the economics and practicalities of installing an air-source heat pump in a 1930s UK semi-detached house. Five articles are supported:
 
 1. **[Considerations for the Fabric First vs Heat Pump First Debate](considerations.md)** — capital and lifecycle cost optimisation across insulation and heat pump options.
 2. **[Impediments to UK Heat Pump Adoption and Possible Solutions](impediments.md)** — qualitative analysis of capital cost, space requirements, and the spark gap.
 3. **[How the Spark Gap Drives the Radiator Upgrades for a Heat Pump Installation](operations-static.md)** — steady-state thermal modelling of flow temperature, COP, and required radiator capacity.
 4. **[Quantitative Analysis of Dynamic Heat Pump Operation for Domestic Heating](operations-dynamic.md)** — dynamic thermal modelling showing how control strategy impacts heat pump economics, comparing gas boiler, simple thermostat, smooth continuous, and tariff-optimised operation.
+5. **[Quantitative Analysis of Dynamic Heat Pump Operation for Design Temperature](operations-design.md)** — feedforward optimisation of heating schedules at design temperature (−2°C), comparing smooth vs interrupted operation (DHW + defrost), with and without radiator upgrades.
 
 ## Project Structure
 
@@ -28,12 +29,14 @@ heat-pump-cost/
 │       ├── identify_thermal_parameters.py   # Parameter identification from data
 │       ├── simulate_gas_boiler.py           # Gas boiler baseline simulation
 │       ├── simulate_smooth_heat_pump.py     # Continuous operation heat pump
-│       └── simulate_tariff_optimized.py     # Tariff-optimized heat pump control
+│       ├── simulate_tariff_optimized.py     # Tariff-optimized heat pump control
+│       └── simulate_design_temperature.py   # Design temperature (−2°C) analysis
 ├── assets/                                  # Generated plots (committed)
 ├── considerations.md
 ├── impediments.md
 ├── operations-static.md
 ├── operations-dynamic.md
+├── operations-design.md
 └── pyproject.toml
 ```
 
@@ -271,6 +274,77 @@ Electricity standing charges are excluded from all scenarios (all households pay
 
 ---
 
+## Article 5: Quantitative Analysis of Dynamic Heat Pump Operation for Design Temperature
+
+**File:** [operations-design.md](operations-design.md)
+
+Extends the dynamic thermal model to design temperature conditions (T_o = −2°C) using a feedforward optimiser that plans 24-hour heating schedules. Compares:
+
+1. **Smooth operation** — continuous heating with optimised power ramping for comfort periods
+2. **Interrupted operation** — realistic operation with DHW slots (2 hours/day) and defrost cycles (10 min/hour)
+
+Each scenario is evaluated with current radiators (K = 71.2 W/K^1.2) and upgraded radiators (K = 93.5 W/K^1.2).
+
+### CLI Command
+
+```bash
+heat-pump-design
+```
+
+or as a module:
+
+```bash
+python -m heat_pump_cost.simulate_design_temperature
+```
+
+**Results:**
+
+**Smooth operation (heating only):**
+- Current radiators: 60.0 kWh/day heat, 16.4 kWh/day electricity, SCOP 3.66, £4.55/day (vs gas £4.10/day)
+- Upgraded radiators: 60.0 kWh/day heat, 15.1 kWh/day electricity, SCOP 3.96, £4.19/day (vs gas £4.10/day)
+
+**Interrupted operation (with DHW + defrost):**
+- Current radiators: 59.1 kWh/day space heat, 17.6 kWh/day electricity (space), SCOP 3.36, £4.88/day (vs gas £4.04/day)
+- Upgraded radiators: 59.1 kWh/day space heat, 16.1 kWh/day electricity (space), SCOP 3.67, £4.47/day (vs gas £4.04/day)
+
+**Key findings:**
+- At design temperature (−2°C), heat pump costs more than gas regardless of radiator upgrade due to spark gap
+- Break-even spark gap: 3.36 (current radiators) or 3.67 (upgraded radiators)
+- With ~10 design-temperature days/year, radiator upgrade payback is ~490 years at design conditions
+- But during typical winter months (5°C), heat pump is 19% cheaper, making the overall economics favourable
+
+**Outputs:**
+- `assets/design_heating_profile.png` — temperature and power profiles (smooth operation, current radiators)
+- `assets/design_flow_temperature_cop.png` — flow temperature and COP profiles (smooth operation, current radiators)
+- `assets/design_flow_temperature_cop_upgrade.png` — flow temperature and COP profiles (smooth operation, upgraded radiators)
+- `assets/design_heating_profile_with_gaps.png` — temperature and power profiles (interrupted operation, current radiators)
+- `assets/design_flow_temperature_cop_gaps.png` — flow temperature and COP profiles (interrupted operation, current radiators)
+- `assets/design_flow_temperature_cop_gaps_upgrade.png` — flow temperature and COP profiles (interrupted operation, upgraded radiators)
+
+### Optimisation Strategy
+
+The feedforward planner optimises hourly power levels to:
+- **Pre-heat before comfort periods:** Ramp up power 2 hours before morning (06:00) and evening (17:00) schedules, reaching peak power ~5.5–6 kW
+- **Maintain comfort efficiently:** Once 19°C is achieved, reduce to ~3 kW to hold temperature
+- **Setback periods:** Deliver steady baseline heating ~2 kW to maintain ~17°C
+
+This approach minimises flow temperatures (peaks at 57–58°C with current radiators) while achieving comfort. Other optimisation strategies (MPC, rule-based, ML) are possible—it's all software.
+
+### DHW and Defrost Model
+
+**DHW slots (4 per day):**
+- 04:00–04:40 and 07:00–07:20 (morning routine)
+- 15:00–15:40 and 18:00–18:20 (evening routine)
+- Total: ~2 hours/day at 55°C flow temperature, COP 2.96
+
+**Defrost cycles:**
+- 10 minutes every hour outside DHW slots (~17% downtime)
+- Heat pump unavailable for space heating during defrost
+
+The optimiser plans around these interruptions to maintain comfort.
+
+---
+
 ## Summary of CLI Tools
 
 | Command | Article | Purpose |
@@ -281,3 +355,4 @@ Electricity standing charges are excluded from all scenarios (all households pay
 | `heat-pump-gas-boiler` | 4 | Gas boiler baseline simulation |
 | `heat-pump-smooth` | 4 | Smooth continuous heat pump operation |
 | `heat-pump-tariff` | 4 | Tariff-optimized heat pump operation |
+| `heat-pump-design` | 5 | Design temperature (−2°C) analysis |

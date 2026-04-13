@@ -2,20 +2,20 @@
 
 Strategy:
   - Continuous operation with varying power levels (not on/off cycling)
-  - Baseline heating (800W) overnight and during day to maintain ~17°C
-  - Predictive control to ramp temperature smoothly toward comfort setpoints
+  - Proportional + feed-forward control: setback periods naturally track ~17°C at whatever T_o requires
+  - 3-hour predictive pre-heat before comfort periods
   - Target maximum flow temperature ~45°C to keep COP high (4.0-5.4)
   
 Heating schedule:
-  22:00 – 06:00  Maintain ~17°C with 800W baseline (night)
+  22:00 – 06:00  Maintain ~17°C (setback)
   06:00 – 09:00  Achieve 19°C comfort (morning)
-  09:00 – 17:00  Maintain ~17°C with 800W baseline (away)
+  09:00 – 17:00  Maintain ~17°C (setback)
   17:00 – 22:00  Achieve 19°C comfort (evening)
 
 Controller approach:
-  - Pre-heat starting 3 hours before comfort periods
-  - Proportional control with feed-forward based on heat loss
-  - Minimum power floor for continuous operation
+  - Feed-forward: h*(T_sp - T_o) provides steady-state power automatically
+  - Proportional feedback: corrects temperature error
+  - 1-hour lookahead: gentle pre-heating before comfort transitions
   - Flow temperature limiting to maximize COP
 """
 
@@ -42,12 +42,11 @@ T_FLOW_MAX = 45.0  # °C - keeps COP around 4.5
 
 # Heating schedule: (start_hour, end_hour, target_temp_°C, minimum_power_W)
 # Indexed relative to a day that begins at 22:00 (t=0 → 22:00).
-# Strategy: continuous operation with varying power levels
 COMFORT_SCHEDULE = [
-    (0,   8,  17.0, 800),    # 22:00 – 06:00  Night: maintain ~17°C with low baseline power
-    (8,  11,  19.0, None),   # 06:00 – 09:00  Morning comfort: full controller
-    (11, 19,  17.0, 800),    # 09:00 – 17:00  Day: maintain ~17°C when away
-    (19, 24,  19.0, None),   # 17:00 – 22:00  Evening comfort: full controller
+    (0,   8,  17.0, None),   # 22:00 – 06:00  Night setback: maintain ~17°C
+    (8,  11,  19.0, None),   # 06:00 – 09:00  Morning comfort: achieve 19°C
+    (11, 19,  17.0, None),   # 09:00 – 17:00  Day setback: maintain ~17°C
+    (19, 24,  19.0, None),   # 17:00 – 22:00  Evening comfort: achieve 19°C
 ]
 
 # Time axis ticks for plotting
@@ -55,16 +54,25 @@ TICK_HOURS = [0, 8, 11, 19, 24]
 TICK_LABELS = ["22:00", "06:00", "09:00", "17:00", "22:00"]
 
 
-def _get_setpoint(t_hours: float) -> tuple[float, float | None]:
+def _get_setpoint(
+    t_hours: float,
+    schedule: list[tuple[float, float, float, float | None]] | None = None,
+) -> tuple[float, float | None]:
     """Get the desired setpoint and minimum power at time t_hours.
-    
+
+    Args:
+        t_hours: Current time in hours (0 = 22:00).
+        schedule: Optional comfort schedule to use instead of the default COMFORT_SCHEDULE.
+
     Returns:
         (setpoint, min_power): target temperature and minimum power (None = no minimum)
     """
-    for start_h, end_h, T_sp, Q_min in COMFORT_SCHEDULE:
+    sched = schedule if schedule is not None else COMFORT_SCHEDULE
+    for start_h, end_h, T_sp, Q_min in sched:
         if start_h <= t_hours < end_h:
             return T_sp, Q_min
-    return COMFORT_SCHEDULE[-1][1], COMFORT_SCHEDULE[-1][2]
+    last = sched[-1]
+    return last[2], last[3]
 
 
 def _smooth_controller(
@@ -73,6 +81,8 @@ def _smooth_controller(
     h: float,
     T_o: float,
     model: DynamicThermalModel,
+    schedule: list[tuple[float, float, float, float | None]] | None = None,
+    K_p: float = 400.0,
 ) -> tuple[float, float]:
     """Smooth predictive controller that maximizes COP.
     
@@ -92,14 +102,14 @@ def _smooth_controller(
     Returns:
         (Q_r, T_f): Commanded heat power and resulting flow temperature
     """
-    T_sp, Q_min = _get_setpoint(t_hours)
-    
+    T_sp, Q_min = _get_setpoint(t_hours, schedule)
+
     # Look ahead to see if we need to pre-heat for upcoming comfort period
-    lookahead_hours = 3.0  # Start heating 3 hours before comfort period
+    lookahead_hours = 3.0  # Start pre-heating 3 hours before comfort period boundary
     t_future = t_hours + lookahead_hours
     if t_future >= 24:
         t_future -= 24
-    T_sp_future, _ = _get_setpoint(t_future)
+    T_sp_future, _ = _get_setpoint(t_future, schedule)
     
     # Estimate heat loss at current indoor temp
     Q_loss_now = h * (T_i - T_o)
@@ -108,7 +118,6 @@ def _smooth_controller(
     Q_ff = h * (T_sp - T_o)
     
     # Proportional feedback: error correction
-    K_p = 400.0  # W/K - proportional gain
     error = T_sp - T_i
     Q_fb = K_p * error
     
@@ -181,6 +190,7 @@ def simulate_smooth_heat_pump(
     T_o: float = 5.0,
     T_i_0: float = 19.0,
     dt_s: float = 60.0,
+    K: float | None = None,
 ) -> dict:
     """Simulate one day (24h) of smooth heat pump operation.
     
@@ -188,6 +198,7 @@ def simulate_smooth_heat_pump(
         T_o: Constant outdoor temperature [°C]
         T_i_0: Initial indoor temperature [°C]
         dt_s: Time step [seconds]
+        K: Radiator constant [W/K^1.2]; if None, uses ThermalSystemParameters default (71.2)
         
     Returns:
         Dictionary with arrays: t_h, T_i, T_s, T_f, Q_r, Q_l, cop,
@@ -195,6 +206,8 @@ def simulate_smooth_heat_pump(
     """
     params = ThermalSystemParameters()
     params.T_o = T_o
+    if K is not None:
+        params.K = K
     model = DynamicThermalModel(params)
     
     # Simulation duration
@@ -295,7 +308,6 @@ def plot_smooth_heat_pump_operation(
     l1, = ax.plot(t, T_i, color="#1f77b4", linewidth=2, label="T_i  (indoor)")
     l2, = ax.plot(t, T_s, color="#d62728", linewidth=1.5, linestyle="--",
                   drawstyle="steps-post", label="T_s  (setpoint)")
-    l3 = ax.axhline(T_o, color="grey", linewidth=1, linestyle=":", label=f"T_o = {T_o:.0f} °C")
     ax.set_ylabel("Temperature (°C)", fontsize=11)
     ax.set_ylim(12, 22)
     ax.set_title(
@@ -308,14 +320,14 @@ def plot_smooth_heat_pump_operation(
     
     # Right axis: heat power
     axr = ax.twinx()
-    l4, = axr.plot(t, Q_r, color="#ff7f0e", linewidth=2,
+    l3, = axr.plot(t, Q_r, color="#ff7f0e", linewidth=2,
                    label="Q_r  (heat delivered, kW)")
     axr.fill_between(t, Q_r, alpha=0.20, color="#ff7f0e")
     axr.set_ylabel("Heat delivered (kW)", fontsize=11, color="#ff7f0e")
     axr.tick_params(axis="y", labelcolor="#ff7f0e")
     axr.set_ylim(0, 4)
     
-    lines = [l1, l2, l3, l4]
+    lines = [l1, l2, l3]
     labels = [l.get_label() for l in lines]
     ax.legend(lines, labels, loc="lower left", fontsize=9)
     
@@ -344,12 +356,14 @@ def plot_smooth_heat_pump_cop(
     fig, ax = plt.subplots(figsize=(11, 5))
     
     # Left axis: flow temperature
-    l1, = ax.plot(t, T_f, color="#1f77b4", linewidth=2, label="T_f  (flow temperature)")
-    l2 = ax.axhline(T_o, color="grey", linewidth=1, linestyle=":", label=f"T_o = {T_o:.0f} °C")
-    l3 = ax.axhline(T_FLOW_MAX, color="red", linewidth=1, linestyle="--", alpha=0.5,
+    l1, = ax.plot(t, T_f, color="#1f77b4", linewidth=1.5, label="T_f  (flow temperature)", antialiased=True)
+    l2 = ax.axhline(T_FLOW_MAX, color="red", linewidth=1, linestyle="--", alpha=0.5,
                     label=f"Target max T_f = {T_FLOW_MAX:.0f} °C")
     ax.set_ylabel("Flow temperature (°C)", fontsize=11)
-    ax.set_ylim(20, 80)
+    T_f_valid = np.asarray(T_f)
+    T_f_valid = T_f_valid[~np.isnan(T_f_valid)] if np.any(np.isnan(T_f_valid)) else T_f_valid
+    T_f_pad = max(3.0, (T_f_valid.max() - T_f_valid.min()) * 0.15)
+    ax.set_ylim(T_f_valid.min() - T_f_pad, T_f_valid.max() + T_f_pad)
     ax.set_title(
         f"Smooth Heat Pump COP – January 2026 (T_o = {T_o:.0f} °C)",
         fontsize=11,
@@ -360,12 +374,25 @@ def plot_smooth_heat_pump_cop(
     
     # Right axis: COP
     axr = ax.twinx()
-    l4, = axr.plot(t, cop, color="#2ca02c", linewidth=2, label="COP")
+    l3, = axr.plot(t, cop, color="#2ca02c", linewidth=1.5, label="COP", antialiased=True)
     axr.set_ylabel("COP", fontsize=11, color="#2ca02c")
     axr.tick_params(axis="y", labelcolor="#2ca02c")
-    axr.set_ylim(0, 7)
+    cop_arr = np.asarray(cop)
+    cop_valid = cop_arr[~np.isnan(cop_arr) & (cop_arr > 0)] if len(cop_arr) else np.array([])
+    if len(cop_valid):
+        cop_lo = float(cop_valid.min())
+        cop_hi = float(cop_valid.max())
+        # Round to nearest 0.5 for clean axis
+        cop_lo_round = np.floor(cop_lo * 2) / 2 - 0.5
+        cop_hi_round = np.ceil(cop_hi * 2) / 2 + 0.5
+        axr.set_ylim(cop_lo_round, cop_hi_round)
+        # Set y-ticks at 0.5 intervals
+        cop_ticks = np.arange(cop_lo_round, cop_hi_round + 0.1, 0.5)
+        axr.set_yticks(cop_ticks)
+    else:
+        axr.set_ylim(2, 7)
     
-    lines = [l1, l2, l3, l4]
+    lines = [l1, l2, l3]
     labels = [l.get_label() for l in lines]
     ax.legend(lines, labels, loc="lower right", fontsize=9)
     

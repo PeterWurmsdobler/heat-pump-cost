@@ -2,9 +2,9 @@
 
 The purpose of this document is to capture the current state of the radiator isntallation and work out the thermal performance.
 
-## Current survey
+## Possible Upgrades
 
-These are the radiatrors throughout our house, with their location, dimensions and rated T50 power.
+Possible new radiators throughout our house, with their location, dimensions and rated T50 power.
 
 [Compact Type 11 Single Panel Single Convector Radiator - 500 x 1400mm](https://www.wickes.co.uk/Compact-Type-11-Single-Panel-Single-Convector-Radiator---500-x-1400mm/p/176168)
 
@@ -46,8 +46,16 @@ at the rated condition ΔT = 50 K (i.e. 50^1.2 ≈ 109.3), giving U = Q / (W × 
 
 | Room | Type | W × H (m) | Area (m²) | Rated power (W) | U (W/m²/K^1.2) | K contribution (W/K^1.2) |
 |---|---|---|---|---|---|---|
-| **Total** | | | | **XXX W** | | **XXX** |
+| Master bedroom 1 | Type 11 | 1.4 × 0.5 | 0.70 | 1210 | 15.8 | 11.1 |
+| Master bedroom 2 | Type 11 | 1.2 × 0.5 | 0.60 | 1037 | 15.8 | 9.5 |
+| Box room | Type 11 | 1.0 × 0.5 | 0.50 | 864 | 15.8 | 7.9 |
+| Bathroom | Towel rail | 0.5 × 1.27 | 0.63 | 952 | 13.7 | 8.7 |
+| Family room | Plan double convector | 0.4 × 1.8 | 0.72 | 1476 | 18.8 | 13.5 |
+| Kitchen/diner | Plan double convector | 0.4 × 1.8 | 0.72 | 1476 | 18.8 | 13.5 |
+| Entrance hall | Type 21 | 0.8 × 0.6 | 0.48 | 1090 | 20.8 | 10.0 |
+| Reception room | Type 22 | 1.4 × 0.5 | 0.70 | 2118 | 27.7 | 19.4 |
+| **Total** | | | | **10,223 W** | | **93.5** |
 
-The K contribution per radiator is W × H × U = Q_rated / 50^1.2 = Q_rated / 109.3. Summing all contributions gives a survey-based house radiator constant of **K_survey = XXX W/K^1.2**.
+The K contribution per radiator is W × H × U = Q_rated / 50^1.2 = Q_rated / 109.3. Summing all contributions gives a survey-based house radiator constant of **K_survey = 93.5 W/K^1.2**.
 
 This value is grounded in manufacturers' rated output figures and represents an upper bound. In practice, not all radiators run simultaneously or at fully open thermostatic valves, the bathroom towel rail contributes little to space heating, and flow distribution across a real circuit is uneven. 
