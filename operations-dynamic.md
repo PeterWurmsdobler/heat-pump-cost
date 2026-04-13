@@ -106,21 +106,21 @@ Suppose electricity does not incur the same cost throughout the day, but rather 
 ![Octopus Cosy Tariff](assets/octopus_cosy_tariff.png)
 *Figure: Octopus Energy Cosy tariff structure showing three rate periods throughout the day.*
 
-The tariff structure creates an economic incentive to shift heating load from the evening peak (16:00–19:00) to the cheaper periods. With a dynamic model of the house thermal response, a cost-optimising controller can exploit this price variation by using the building's thermal mass as a "battery", pre-heating with higher flow temperatures during cheap periods and coasting through expensive ones. The optimisation strategy maintains comfort bounds (17–20°C acceptable range throughout) while minimising cost:
+The tariff structure creates an economic incentive to shift heating load from the evening peak (16:00–19:00) to the cheaper periods. With a dynamic model of the house thermal response, a cost-optimising controller can exploit this price variation by using the building's thermal mass as a "battery", aggressively pre-heating during cheap periods and coasting through expensive ones. The optimisation strategy accepts some temperature variation (18–19.5°C range) to minimise cost:
 
-- **During cheap periods** (04:00–07:00, 13:00–16:00, 22:00–00:00): Heat at 2.4–2.7 kW with flow temperatures up to 38–41°C (capped at 55°C). This accepts lower COP temporarily to maximise thermal energy stored in the building fabric while electricity is cheap.
-- **During peak period** (16:00–19:00): Reduce power to 1.4–1.9 kW, relying on stored thermal energy as temperature gradually drifts toward the lower bound.
-- **During standard periods**: Maintain moderate heating (1.5–2.0 kW) with flow temperatures around 38–45°C to balance efficiency and comfort.
+- **During cheap periods** (04:00–07:00, 13:00–16:00, 22:00–00:00): Heat aggressively at ~3.0 kW with flow temperatures up to 40–43°C (capped at 55°C). Pre-heat to 19.5°C to maximise thermal energy stored in the building fabric while electricity is cheap.
+- **During peak period** (16:00–19:00): Minimal or no heating (0–0.5 kW), relying entirely on stored thermal energy as temperature drops from 19.5°C to 18.5°C. The 40.9-hour thermal time constant means the house cools slowly enough that comfort is maintained.
+- **During standard periods**: Light heating (1.5–1.7 kW) after cheap periods end, coasting on thermal mass with flow temperatures around 33–40°C to balance efficiency and comfort.
 
-The controller looks ahead 4 hours to anticipate rate changes and begins pre-heating before cheap periods start. Temperature remains comfortably within 18.5–20°C for most of the day, briefly touching 18°C during transitions. Total heat delivered is **41.3 kWh/day** (higher than the 36.7 kWh from flat-rate optimisation, due to increased losses from maintaining warmer average temperatures).
+The controller exploits the building's slow thermal response: aggressive pre-heating during 14.53p periods stores energy, which carries through the 51.68p peak with almost no heating required. Temperature varies between 18.5–19.5°C throughout the day, remaining comfortable while minimising cost. Total heat delivered is **37.2 kWh/day** (similar to the 36.7 kWh from flat-rate optimisation).
 
 ![Tariff-Optimised Operation](assets/tariff_optimized_operation.png)
-*Figure: Tariff-optimised heat pump operation, heat = 41.3 kWh/day, electricity = 8.5 kWh/day, £2.15/day.*
+*Figure: Tariff-optimised heat pump operation, heat = 37.2 kWh/day, electricity = 7.8 kWh/day, £1.76/day.*
 
-The flow temperature and COP profiles reveal the trade-off between efficiency and cost optimisation. During cheap-rate pre-heating periods, flow temperatures rise to 38–41°C (capped at 55°C) with COP between 4.8–5.0. During the peak period, the controller minimises heating power, allowing lower flow temperatures around 30–35°C maintaining COP of 5.0–5.4. During standard rate periods, moderate flow temperatures of 32–36°C achieve COP around 4.9–5.1. The overall seasonal COP of **4.85** is lower than the flat-tariff smooth operation (5.18) due to the intensive pre-heating strategy, but this is compensated by buying more energy during cheap periods.
+The flow temperature and COP profiles reveal the trade-off between efficiency and cost optimisation. During cheap-rate pre-heating periods, flow temperatures rise to 40–43°C (capped at 55°C) with COP around 4.5–5.1. During the peak period (16:00–19:00), heating is minimal or zero—the controller relies entirely on thermal mass, resulting in very low flow temperatures (20–25°C) when any heating occurs. During standard rate periods after cosy periods end, light heating with flow temperatures of 33–40°C achieves COP around 5.0–5.5. The overall seasonal COP of **4.74** is slightly lower than the flat-tariff smooth operation (5.18) due to the intensive pre-heating strategy, but this is more than compensated by buying most energy during cheap periods at 14.53p/kWh instead of 27.69p/kWh.
 
 ![Tariff-Optimised COP](assets/tariff_optimized_cop.png)
-*Figure: Flow temperatures up to 41°C during cheap periods store maximum energy despite lower instantaneous COP.*
+*Figure: Flow temperatures up to 43°C during cheap periods store maximum energy; minimal heating during expensive peak period.*
 
 It is worth noting that the Octopus Cosy tariff used to offer a cheap rate as low as **8p/kWh**, at which point the economics would have been much more attractive. At today's cosy rates of 14.53p/kWh, the benefit is modest. Other time-of-use tariffs, such as **Octopus Agile**, use near-real-time spot pricing that can fall very low during periods of high renewable generation, or spike sharply at times of grid stress. A cost-optimising controller with access to day-ahead prices could exploit those deeper discounts, but the outcome is inherently variable and harder to predict.
 
@@ -147,11 +147,11 @@ Across the various heating strategies simulated, several key insights emerge abo
   Heat: 36.7 kWh/day, Electricity: 7.1 kWh/day, SCOP: 5.18, Cost: £1.96 energy  
   Continuous baseline heating, flow temperatures 25–36°C, superior comfort and COP.
 
-- **Heat pump with tariff-optimised operation (Octopus Cosy)**: £2.15/day (−11% vs gas)  
-  Heat: 41.3 kWh/day, Electricity: 8.5 kWh/day, SCOP: 4.85, Cost: £2.15 energy  
-  Pre-heating during cheap periods (14.53p), flow temperatures up to 41°C when electricity is cheap.
+- **Heat pump with tariff-optimised operation (Octopus Cosy)**: £1.76/day (−27% vs gas)  
+  Heat: 37.2 kWh/day, Electricity: 7.8 kWh/day, SCOP: 4.74, Cost: £1.76 energy  
+  Aggressive pre-heating during cheap periods (14.53p), minimal/no heating during expensive peak (51.68p).
 
-The simple thermostat heat pump operation (mimicking a gas boiler) is the worst performer with an energy cost of £3.11/day, **29% more expensive than gas heating**. This demonstrates that heat pumps cannot be operated like gas boilers. In contrast, the smooth continuous heat pump operation achieves the lowest cost of all scenarios at £1.96/day, **19% cheaper than gas heating** while providing superior comfort. This demonstrates that heat pumps can beat gas economics when operated intelligently with optimised flow temperatures and predictive control. The tariff-optimised strategy on Octopus Cosy is **11% cheaper than gas**.
+The simple thermostat heat pump operation (mimicking a gas boiler) is the worst performer with an energy cost of £3.11/day, **29% more expensive than gas heating**. This demonstrates that heat pumps cannot be operated like gas boilers. In contrast, the smooth continuous heat pump operation achieves £1.96/day, **19% cheaper than gas heating** while providing superior comfort. This demonstrates that heat pumps can beat gas economics when operated intelligently with optimised flow temperatures and predictive control. The tariff-optimised strategy on Octopus Cosy achieves the best result at £1.76/day, **27% cheaper than gas and 10% cheaper than the flat-rate smooth operation**, by aggressively exploiting the price differential between cheap (14.53p) and peak (51.68p) periods.
 
 
 # Conclusion

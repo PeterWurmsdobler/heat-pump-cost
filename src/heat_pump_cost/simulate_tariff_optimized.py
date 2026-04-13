@@ -127,15 +127,13 @@ def _tariff_optimized_controller(
     current_price = get_electricity_price(t_hours)
     in_cheap_period = is_cheap_period(t_hours)
     
-    # Look ahead to find cheap and expensive periods
-    t_sample_points = np.linspace(t_hours, t_hours + lookahead_hours, 20)
-    future_prices = [get_electricity_price(t) for t in t_sample_points]
-    avg_future_price = np.mean(future_prices)
-    min_future_price = np.min(future_prices)
+    # Normalize time to 0-24 range
+    t_h_mod = t_hours % 24
     
-    # Determine if we're in a cheap period relative to near future
-    is_cheap_now = in_cheap_period or (current_price < avg_future_price * 0.9)
-    is_expensive_now = current_price > avg_future_price * 1.3
+    # Identify specific tariff periods
+    # Cosy periods: 22:00-00:00, 04:00-07:00, 13:00-16:00
+    # Peak period: 16:00-19:00
+    is_peak_period = (16.0 <= t_h_mod < 19.0)
     
     # Set flow temperature limit based on tariff period
     T_flow_max = T_FLOW_MAX_CHEAP if in_cheap_period else T_FLOW_MAX_NORMAL
@@ -143,27 +141,70 @@ def _tariff_optimized_controller(
     # Base heat loss at current temp
     Q_loss = h * (T_i - T_o)
     
-    # Determine target temperature based on tariff
-    if is_cheap_now:
-        # Cheap period: aim for upper comfort bound to store thermal energy
-        T_target = T_max
-    elif is_expensive_now:
-        # Expensive period: aim for lower comfort bound to minimize heating
-        T_target = T_min
+    # Strategy: Aggressive cost optimization
+    # 1. Pre-heat during cheap periods to ~19.5°C
+    # 2. Coast after cheap periods end - minimal heating
+    # 3. During expensive peak (16:00-19:00): almost no heating, let temp drop
+    # 4. During normal periods: moderate heating only if needed
+    
+    if in_cheap_period:
+        # CHEAP COSY PERIOD: Pre-heat aggressively to store thermal energy
+        T_target = 19.5  # Upper bound for pre-heating
+        K_p = 1200.0  # Aggressive gain to reach target quickly
+        Q_ff = h * (T_target - T_o)
+        Q_fb = K_p * (T_target - T_i)
+        Q_r = max(0, Q_ff + Q_fb)
+        
+        # Don't overshoot - if already at target, back off
+        if T_i >= T_target:
+            Q_r = min(Q_r, Q_loss * 1.1)
+        elif T_i >= T_target - 0.3:
+            Q_r = min(Q_r, Q_loss * 1.5)
+            
+    elif is_peak_period:
+        # EXPENSIVE PEAK (16:00-19:00): Minimize heating drastically
+        # Let temperature drop - rely on thermal mass from earlier pre-heating
+        # Only provide minimal heating if temperature drops too low
+        if T_i > 18.0:
+            # Above 18°C: No heating at all, coast on thermal mass
+            Q_r = 0.0
+        elif T_i > 17.5:
+            # 17.5-18°C: Minimal heating to slow the drop
+            Q_r = Q_loss * 0.5  # Half of heat loss
+        else:
+            # Below 17.5°C: Prevent excessive drop
+            Q_r = Q_loss * 0.8
+            
     else:
-        # Normal period: aim for middle of comfort range
-        T_target = (T_min + T_max) / 2
-    
-    # Feed-forward + proportional control
-    K_p = 500.0  # W/K
-    Q_ff = h * (T_target - T_o)
-    Q_fb = K_p * (T_target - T_i)
-    Q_r = max(0, Q_ff + Q_fb)
-    
-    # During expensive periods, cap power aggressively if above minimum temp
-    if is_expensive_now and T_i >= T_min:
-        # Only provide heat loss compensation, no pre-heating
-        Q_r = min(Q_r, Q_loss * 1.1)
+        # STANDARD RATE PERIODS: Moderate heating
+        # After cheap periods end, coast on thermal mass
+        # Only heat if temperature drops below comfort
+        
+        # Check if we just exited a cheap period (within 1 hour after)
+        just_after_cosy = (
+            (7.0 <= t_h_mod < 9.0) or   # After morning cosy (07:00-09:00)
+            (0.0 <= t_h_mod < 2.0)       # After night cosy (00:00-02:00)
+        )
+        
+        if just_after_cosy:
+            # Coast period: minimal heating, let thermal mass carry
+            if T_i > 18.5:
+                Q_r = 0.0  # No heating needed
+            elif T_i > 18.0:
+                Q_r = Q_loss * 0.6  # Light heating
+            else:
+                Q_r = Q_loss * 1.0  # Compensate losses
+        else:
+            # Standard periods not adjacent to cosy: maintain moderate comfort
+            T_target = 18.5  # Conservative target
+            K_p = 600.0  # Moderate gain
+            Q_ff = h * (T_target - T_o)
+            Q_fb = K_p * (T_target - T_i)
+            Q_r = max(0, Q_ff + Q_fb)
+            
+            # Don't overshoot  
+            if T_i >= T_target:
+                Q_r = min(Q_r, Q_loss * 1.1)
     
     # Minimum baseline to prevent excessive cooling
     Q_min = 500.0  # W
