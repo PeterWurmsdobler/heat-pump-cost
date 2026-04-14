@@ -125,13 +125,6 @@ The flow temperature and COP profiles reveal the trade-off between efficiency an
 It is worth noting that the Octopus Cosy tariff used to offer a cheap rate as low as **8p/kWh**, at which point the economics would have been much more attractive. At today's cosy rates of 14.53p/kWh, the benefit is modest. Other time-of-use tariffs, such as **Octopus Agile**, use near-real-time spot pricing that can fall very low during periods of high renewable generation, or spike sharply at times of grid stress. A cost-optimising controller with access to day-ahead prices could exploit those deeper discounts, but the outcome is inherently variable and harder to predict.
 
 
-## Operational Limitations
-
-These simulations only assume that the heat pump is being used for space heating; most heat pumps also need to provide power for domestic hot water. Given the thermal capacity of water (4.18 kJ/kg/K), this requires either a powerful heat pump (of the order of 20–30 kW) or a hot water tank that is heated gradually when time and cost permit. These periods are not available for space heating. For instance, heating 200 l/day of water from 10°C to 60°C requires 11.6 kWh of thermal energy; at a heat pump power rating of 6 kW, this requires about 2 hours for hot water generation. 
-
-There is another factor to be taken into account in colder areas: defrost cycles. Periodically, the heat pump switches into reverse mode to melt ice build-up on the outdoor heat exchanger coil. 
-
-
 # Comparison
 
 Across the various heating strategies simulated, several key insights emerge about the economics and operation of heat pumps compared to gas boilers. All costs include heating energy and, for gas heating, the gas standing charge. The electricity standing charge is excluded from all scenarios as all households incur this charge regardless of heating method. The operating costs for January 2026 conditions (T_o = 5°C average) are:
@@ -161,6 +154,11 @@ In summary, a heating system using a heat pump cannot be operated like one with 
 - DIY: set up [Home Assistant](https://www.home-assistant.io/), automate your home with sensors and actuators, and spend your spare time on optimisation of the home energy system;
 - use the energy management system that comes with a heat pump manufacturer which might even integrate other appliances, e.g. [Bosch Energy Management](https://www.bosch.com/stories/smart-home-energy-management-system/);
 - outsource the optimisation to a specialist cloud software provider that manages all of that for you, learning from patterns across a wider user base, e.g. [Havenwise](https://www.havenwise.co.uk/) or [Adia Thermal](https://adiathermal.co.uk/).
+
+
+## Limitations
+
+These simulations only assume that the heat pump is being used for space heating; most heat pumps also need to provide power for domestic hot water. In addition, there is another factor to be taken into account in colder areas, defrost cycles: periodically, the heat pump switches into reverse mode to melt ice build-up on the outdoor heat exchanger coil. These are taking into account in the next story: [Quantitative Analysis of Dynamic Heat Pump Operation for Design Temperature](https://medium.com/@peter-wurmsdobler/quantitative-analysis-of-dynamic-heat-pump-operation-for-design-temperature-51df19846000)
 
 
 *Analysis conducted on a 1930s semi-detached house. Code and methodology available at [github.com/PeterWurmsdobler/heat-pump-cost](https://github.com/PeterWurmsdobler/heat-pump-cost).*
