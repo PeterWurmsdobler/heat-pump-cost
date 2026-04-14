@@ -1,20 +1,22 @@
 # Heat Pump Cost Analysis
 
-A collection of quantitative analyses — each backed by Python models — exploring the economics and practicalities of installing an air-source heat pump in a 1930s UK semi-detached house. Five articles are supported:
+A collection of quantitative analyses — each backed by Python models — exploring the economics and practicalities of installing an air-source heat pump in a 1930s UK semi-detached house. Six articles are supported:
 
 1. **[Considerations for the Fabric First vs Heat Pump First Debate](considerations.md)** — capital and lifecycle cost optimisation across insulation and heat pump options.
 2. **[Impediments to UK Heat Pump Adoption and Possible Solutions](impediments.md)** — qualitative analysis of capital cost, space requirements, and the spark gap.
 3. **[How the Spark Gap Drives the Radiator Upgrades for a Heat Pump Installation](operations-static.md)** — steady-state thermal modelling of flow temperature, COP, and required radiator capacity.
 4. **[Quantitative Analysis of Dynamic Heat Pump Operation for Domestic Heating](operations-dynamic.md)** — dynamic thermal modelling showing how control strategy impacts heat pump economics, comparing gas boiler, simple thermostat, smooth continuous, and tariff-optimised operation.
 5. **[Quantitative Analysis of Dynamic Heat Pump Operation for Design Temperature](operations-design.md)** — feedforward optimisation of heating schedules at design temperature (−2°C), comparing smooth vs interrupted operation (DHW + defrost), with and without radiator upgrades.
+6. **[Quantitative Analysis of Heat Pump Operation for Domestic Hot Water](domestic-hot-water.md)** — analysis of DHW costs showing daily cost vs outdoor temperature, required spark gap for economic viability, and annual Cambridge 2025 cost comparison (£288/year HP vs £239/year gas energy-only).
 
 ## Project Structure
 
 ```
 heat-pump-cost/
 ├── data/
-│   ├── heat-pump-ratings.csv        # Heat pump specifications and costs
-│   └── home-improvements.csv        # Insulation improvement options
+│   ├── heat-pump-ratings.csv           # Heat pump specifications and costs
+│   ├── home-improvements.csv           # Insulation improvement options
+│   └── temperatures-cambridge-2025.csv # Hourly temperature data for annual analysis
 ├── src/
 │   └── heat_pump_cost/
 │       ├── __init__.py
@@ -30,13 +32,16 @@ heat-pump-cost/
 │       ├── simulate_gas_boiler.py           # Gas boiler baseline simulation
 │       ├── simulate_smooth_heat_pump.py     # Continuous operation heat pump
 │       ├── simulate_tariff_optimized.py     # Tariff-optimized heat pump control
-│       └── simulate_design_temperature.py   # Design temperature (−2°C) analysis
+│       ├── simulate_design_temperature.py   # Design temperature (−2°C) analysis
+│       ├── plot_dhw_cost.py                 # DHW daily cost and spark gap plots
+│       └── analyze_annual_dhw.py            # Annual DHW cost analysis from temperature data
 ├── assets/                                  # Generated plots (committed)
 ├── considerations.md
 ├── impediments.md
 ├── operations-static.md
 ├── operations-dynamic.md
 ├── operations-design.md
+├── domestic-hot-water.md
 └── pyproject.toml
 ```
 
@@ -345,6 +350,57 @@ The optimiser plans around these interruptions to maintain comfort.
 
 ---
 
+---
+
+## Article 6: Quantitative Analysis of Heat Pump Operation for Domestic Hot Water
+
+**File:** [domestic-hot-water.md](domestic-hot-water.md)
+
+Analyses the economics of using a heat pump for domestic hot water (DHW) production at 55°C flow temperature. Shows that whilst heat pump DHW is 20% more expensive than gas on an energy-only basis at current UK spark gap (4.67), a spark gap of only 3.11 would achieve break-even even at the design temperature of −2°C.
+
+### Generate the plots
+
+**Daily cost and spark gap plots:**
+
+```bash
+python -m heat_pump_cost.plot_dhw_cost
+```
+
+Generates two plots:
+- `assets/hot_water_cost.png` — Daily DHW cost (£/day) and COP vs outdoor temperature
+- `assets/hot_water_spark_gap.png` — Required spark gap for break-even vs outdoor temperature
+
+**Annual cost analysis:**
+
+```bash
+python -m heat_pump_cost.analyze_annual_dhw
+```
+
+Analyses full year of Cambridge 2025 hourly temperature data with realistic DHW schedule (100 l at 04:00, 100 l at 15:00). Generates:
+- `assets/annual_dhw_cost.png` — Daily DHW costs throughout 2025
+- Console output with annual totals and both scenarios
+
+### Key Results
+
+**Daily cost (200 l/day, 10°C → 55°C):**
+- Gas boiler: 65.5p/day (95% efficiency, 5.93p/kWh)
+- Heat pump: varies with outdoor temperature (0.6–1.0 £/day)
+- Break-even: 18.6°C outdoor temperature, COP 4.44
+
+**Annual costs (Cambridge 2025, avg T_o = 10.3°C, avg COP = 3.77):**
+- Heat pump: £288/year (electricity)
+- Gas boiler: £239/year (energy only)
+- Difference: £49/year more expensive (+20%)
+
+**Required spark gap for break-even:**
+- At design temperature (−2°C, COP 2.96): 3.11
+- At annual average (10.3°C, COP 3.77): 3.56
+- Current UK spark gap: 4.67 (too high for economic viability)
+
+The analysis demonstrates that the UK's high spark gap is a policy barrier rather than a physical constraint—many European countries operate with spark gaps below 3, making heat pump DHW economically viable year-round.
+
+---
+
 ## Summary of CLI Tools
 
 | Command | Article | Purpose |
@@ -355,4 +411,9 @@ The optimiser plans around these interruptions to maintain comfort.
 | `heat-pump-gas-boiler` | 4 | Gas boiler baseline simulation |
 | `heat-pump-smooth` | 4 | Smooth continuous heat pump operation |
 | `heat-pump-tariff` | 4 | Tariff-optimized heat pump operation |
+| `heat-pump-design` | 5 | Design temperature (−2°C) analysis |
+
+**Module-only tools (no CLI):**
+- `python -m heat_pump_cost.plot_dhw_cost` (Article 6) — DHW daily cost and spark gap plots
+- `python -m heat_pump_cost.analyze_annual_dhw` (Article 6) — Annual DHW cost analysis
 | `heat-pump-design` | 5 | Design temperature (−2°C) analysis |
