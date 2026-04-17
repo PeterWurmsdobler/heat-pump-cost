@@ -1,6 +1,6 @@
 # Heat Pump Cost Analysis
 
-A collection of quantitative analyses — each backed by Python models — exploring the economics and practicalities of installing an air-source heat pump in a 1930s UK semi-detached house. Six articles are supported:
+A collection of quantitative analyses — each backed by Python models — exploring the economics and practicalities of installing an air-source heat pump in a 1930s UK semi-detached house. Seven articles are supported:
 
 1. **[Considerations for the Fabric First vs Heat Pump First Debate](considerations.md)** — capital and lifecycle cost optimisation across insulation and heat pump options.
 2. **[Impediments to UK Heat Pump Adoption and Possible Solutions](impediments.md)** — qualitative analysis of capital cost, space requirements, and the spark gap.
@@ -8,6 +8,7 @@ A collection of quantitative analyses — each backed by Python models — explo
 4. **[Quantitative Analysis of Dynamic Heat Pump Operation for Domestic Heating](operations-dynamic.md)** — dynamic thermal modelling showing how control strategy impacts heat pump economics, comparing gas boiler, simple thermostat, smooth continuous, and tariff-optimised operation.
 5. **[Quantitative Analysis of Dynamic Heat Pump Operation for Design Temperature](operations-design.md)** — feedforward optimisation of heating schedules at design temperature (−2°C), comparing smooth vs interrupted operation (DHW + defrost), with and without radiator upgrades.
 6. **[Quantitative Analysis of Heat Pump Operation for Domestic Hot Water](domestic-hot-water.md)** — analysis of DHW costs showing daily cost vs outdoor temperature, required spark gap for economic viability, and annual Cambridge 2025 cost comparison (£288/year HP vs £239/year gas energy-only).
+7. **[Quantitative Analysis of Heat Pump Operation for Space Heating and Domestic Hot Water](operations-complete.md)** — full-year simulation combining space heating and DHW using Cambridge 2025 temperature data, with per-day feedforward control, quarterly Ofgem tariffs, and a radiator upgrade comparison (K = 71.2 vs 93.5 W/K^1.2).
 
 ## Project Structure
 
@@ -22,7 +23,7 @@ heat-pump-cost/
 │       ├── __init__.py
 │       ├── __main__.py                      # Module entry point
 │       ├── cli.py                           # CLI for considerations analysis
-│       ├── cost_calculator.py               # Capital + runtime cost optimisation
+│       ├── cost_calculator.py               # Capital + runtime cost optimisationgi
 │       ├── plot_cost_analysis.py            # Generates considerations plots
 │       ├── plotter.py                       # Shared plotting utilities
 │       ├── operations_model.py              # Steady-state heat flow model + contour plots
@@ -34,7 +35,8 @@ heat-pump-cost/
 │       ├── simulate_tariff_optimized.py     # Tariff-optimized heat pump control
 │       ├── simulate_design_temperature.py   # Design temperature (−2°C) analysis
 │       ├── plot_dhw_cost.py                 # DHW daily cost and spark gap plots
-│       └── analyze_annual_dhw.py            # Annual DHW cost analysis from temperature data
+│       ├── analyze_annual_dhw.py            # Annual DHW cost analysis from temperature data
+│       └── simulate_annual_heating.py       # Full-year space heating + DHW simulation
 ├── assets/                                  # Generated plots (committed)
 ├── considerations.md
 ├── impediments.md
@@ -42,6 +44,7 @@ heat-pump-cost/
 ├── operations-dynamic.md
 ├── operations-design.md
 ├── domestic-hot-water.md
+├── operations-complete.md
 └── pyproject.toml
 ```
 
@@ -398,6 +401,79 @@ Analyses full year of Cambridge 2025 hourly temperature data with realistic DHW 
 - Current UK spark gap: 4.67 (too high for economic viability)
 
 The analysis demonstrates that the UK's high spark gap is a policy barrier rather than a physical constraint—many European countries operate with spark gaps below 3, making heat pump DHW economically viable year-round.
+
+---
+
+## Article 7: Quantitative Analysis of Heat Pump Operation for Space Heating and Domestic Hot Water
+
+**File:** [operations-complete.md](operations-complete.md)
+
+Combines the space heating and DHW models into a full-year simulation driven by actual Cambridge 2025 outdoor temperature data. A rolling 24-hour feedforward planner runs every day, deciding whether to heat, whether defrost cycles are needed, and computing an optimal hourly power schedule. Costs are calculated against the quarterly Ofgem energy price cap for 2025.
+
+### CLI Command
+
+```bash
+# Annual summary only (no per-day plots)
+python -m heat_pump_cost.simulate_annual_heating
+
+# Annual summary + per-day profile and COP plots saved to assets/annual/
+python -m heat_pump_cost.simulate_annual_heating --daily-plots
+```
+
+### Key Results (K = 71.2 W/K^1.2, current radiators)
+
+| Metric | Value |
+|---|---|
+| Days simulated | 364 |
+| Space heating days | 270 |
+| Mean space-heating SCOP | 4.18 |
+| Space heating thermal energy | 6,982 kWh/yr |
+| DHW thermal energy | 3,822 kWh/yr |
+| Combined useful heat | 10,804 kWh/yr |
+| Combined electricity | 2,992 kWh/yr |
+| Annual HP cost (space + DHW) | £771.15 |
+| Annual gas cost (space + DHW + SC) | £876.42 |
+| Annual saving vs gas | £105.27 |
+
+### Radiator Upgrade Comparison
+
+| | Current (K = 71.2) | Upgraded (K = 93.5) |
+|---|---|---|
+| Mean space-heating SCOP | 4.18 | 4.52 |
+| Annual HP cost | £771.15 | £729.50 |
+| Annual saving vs gas | £105.27 | £146.93 |
+| Extra saving from upgrade | — | £41.66/yr |
+| Payback at £2,000 upgrade cost | — | 48 years |
+
+### Outputs
+
+| File | Description |
+|---|---|
+| `assets/annual_heating_overview.png` | 3-panel annual overview: outdoor temperature, daily costs, SCOP scatter |
+| `assets/annual_heating_overview_upgraded.png` | Same with K = 93.5 W/K^1.2 |
+| `assets/annual/annual_heating_YYYYMMDD_profile.png` | Per-day indoor temperature and heating power (generated with `--daily-plots`) |
+| `assets/annual/annual_heating_YYYYMMDD_cop.png` | Per-day flow temperature and COP (generated with `--daily-plots`) |
+
+### Controller Design
+
+The planner runs nightly at 22:00 using the next 24 hours of recorded outdoor temperatures as a proxy for a weather forecast:
+
+1. **Heating decision:** space heating activated when 24-hour mean T_o < 15 °C
+2. **Defrost reservation:** 10 min/hour reserved when min T_o < 2 °C
+3. **DHW slots:** four fixed slots totalling ~1.75 hours reserved each day
+4. **Feedforward optimisation:** weighted least-squares over 24 hourly power levels; uniform weight 200 in comfort periods, weight 5 in setback periods
+5. **Proportional feedback:** correction term capped at 30 % of the feedforward value applied each minute
+
+### Energy Prices
+
+Ofgem quarterly price cap 2025 (5 % VAT included, electricity standing charge excluded):
+
+| Quarter | Electricity | Gas unit | Gas SC |
+|---|---|---|---|
+| Q1 Jan–Mar | 24.86p/kWh | 6.34p/kWh | 31.65p/day |
+| Q2 Apr–Jun | 27.03p/kWh | 6.99p/kWh | 32.67p/day |
+| Q3 Jul–Sep | 25.73p/kWh | 6.33p/kWh | 29.82p/day |
+| Q4 Oct–Dec | 26.35p/kWh | 6.29p/kWh | 34.03p/day |
 
 ---
 
