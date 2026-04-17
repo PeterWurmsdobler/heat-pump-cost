@@ -32,21 +32,25 @@ VF_FIXED = 20.0 / 60.0  # Fixed flow rate [l/s] = 20 l/min
 # COP model parameters
 COP_EFFICIENCY = 0.55  # Carnot efficiency factor for modern heat pumps
 T_LIFT = 5.0  # Temperature lift from radiator flow to heat pump condenser [K]
+COP_MAX = 6.0  # Physical ceiling — best-in-class ASHPs reach ~6 at A15/W25
 
 
 def cop_estimate(t_outdoor, t_flow):
     """
     Estimate heat pump COP based on outdoor and flow temperatures.
     
-    Uses Carnot efficiency with practical degradation factor.
-    COP = η * T_condenser / (T_condenser - T_evaporator)
+    Uses Carnot efficiency with practical degradation factor, capped at COP_MAX
+    to prevent unrealistic values when the temperature lift is very small
+    (e.g. mild days with low heat loads driving T_flow close to T_indoor).
+
+    COP = min(η * T_condenser / (T_condenser - T_evaporator), COP_MAX)
     
     Args:
         t_outdoor: Outdoor temperature [°C]
         t_flow: Radiator flow temperature [°C]
     
     Returns:
-        Estimated COP
+        Estimated COP (capped at COP_MAX)
     """
     # Convert to Kelvin
     T_evap = t_outdoor + 273.15
@@ -55,10 +59,10 @@ def cop_estimate(t_outdoor, t_flow):
     # Carnot COP
     cop_carnot = T_cond / (T_cond - T_evap)
     
-    # Apply efficiency factor
+    # Apply efficiency factor and physical ceiling
     cop = COP_EFFICIENCY * cop_carnot
     
-    return cop
+    return min(cop, COP_MAX)
 
 
 def solve_for_flow_temp(q_target, k_rad, vf, ti=TI, n=N_RAD):
