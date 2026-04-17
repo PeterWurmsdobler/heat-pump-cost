@@ -46,7 +46,7 @@ Over the 364 days, the heat pump delivered 6,982 kWh of space heating thermal en
 
 The mean space-heating SCOP across the 270 heating days was 4.18. The quarterly spark gaps for 2025 were 3.92 (Q1), 3.87 (Q2), 4.07 (Q3) and 4.19 (Q4). On an individual-day basis, the coldest winter days returned SCOPs in the range 3.0–3.5, below the quarterly spark gap, whilst milder days in spring and autumn reached 5–6. The mean SCOP of 4.18 exceeds the spark gap in Q1, Q2, and Q3, and sits approximately level with it in Q4.
 
-The annual electricity cost for space heating and DHW combined was £771.15. The comparable gas cost, including the daily gas standing charge for every day of the year, was £876.42, giving an annual saving of £105.27 in favour of the heat pump. A material part of this saving is attributable to the gas standing charge, which accumulates to roughly £116 over the full year; without it, the two options would be similar in total energy cost under 2025 tariff conditions.
+The annual electricity cost for space heating and DHW combined was £771.15. The comparable gas cost, including the daily gas standing charge for every day of the year, was £876.42, giving an annual saving of £105.27 in favour of the heat pump. A material part of this saving is attributable to the gas standing charge, which accumulates to roughly £116 over the full year; without it, the two options would be similar in total energy cost under 2025 tariff conditions (^4).
 
 ![Annual overview](assets/annual_heating_overview.png)  
 *Figure: Annual overview. Top: daily mean and minimum outdoor temperature with the 15 °C heating threshold and 2 °C defrost threshold. Centre: daily running cost for the heat pump (space + DHW) versus the gas equivalent. Bottom: space-heating SCOP on heating days, with the quarterly spark gap.*
@@ -99,7 +99,7 @@ At milder outdoor temperatures the reduced heat demand requires lower flow tempe
 
 ## Radiator Upgrade
 
-As established in [Radiator Upgrades](https://github.com/PeterWurmsdobler/heat-pump-cost/blob/main/radiator-upgrade.md), replacing all radiators with higher-output models raises the house radiator constant from K = 71.2 W/K^1.2 to K = 93.5 W/K^1.2. The larger surface area allows the same heat output at a lower flow temperature, which in turn raises the COP on every heating day. The full-year simulation was repeated with K = 93.5, with all other parameters unchanged.
+As established in [Radiator Upgrades](https://github.com/PeterWurmsdobler/heat-pump-cost/blob/main/radiator-upgrade.md), replacing all radiators with higher-output models raises the house radiator constant from K = 71.2 W/K^1.2 to K = 93.5 W/K^1.2 (at about an estimated cost of £2000 for materials and labour, even though I would do it myself due to special requirements on running pipes) The larger surface area allows the same heat output at a lower flow temperature, which in turn raises the COP on every heating day. The full-year simulation was repeated with K = 93.5, with all other parameters unchanged.
 
 The mean space-heating SCOP rises from 4.18 to 4.52, and the annual heat pump cost falls from £771.15 to £729.50, a reduction of £41.66. The gas cost is unaffected. The extra annual saving relative to the current radiators is therefore £41.66. At an estimated upgrade cost of £2,000, the simple payback period is approximately 48 years.
 
@@ -139,3 +139,5 @@ Beyond the direct cost comparison, the indoor temperature profile produced by a 
 | Oct – Dec | 26.35p / kWh | 53.68p / day | 6.29p / kWh | 34.03p / day |
 
 3. **Heating costs**: The underlying assumption in the comparison is that households would always have an electricity supply; therefore, an electricity standing charge would be due in all cases and will not be included in the comparison. The gas standing charge, however, is added to the gas heating scenario as any other scenario would not incur that charge (assuming a fully electrified home).
+
+4. **Capital expenditure**: This analysis focuses purely on the operating expenditure, or: the amount of operating costs to meet all heating needs with a heat pump instead of a gas boiler assuming one had one or the other. If one started with no system (or were in need of upgrading anyway), the capital expenditure over the expected lifetime will have to be taken into account. And there, some work has to be done as most installations are simply too expensive due to unnecessary complexity. See [Impediments to UK Heat Pump Adoption and Possible Solutions](https://peter-wurmsdobler.medium.com/impediments-to-uk-heat-pump-adoption-and-possible-solutions-7d3812c091e4) for more details.
