@@ -31,8 +31,9 @@ The controller operates on a rolling 24-hour planning window that starts at 22:0
 
 When space heating is required, a feedforward plan is computed by solving a weighted least-squares problem: 24 hourly power levels are chosen to minimise the weighted sum of squared deviations from the target temperature profile, evaluated at every minute of the window. The optimiser assigns a uniform weight of 200 to all timesteps in the two comfort periods and a weight of 5 to setback periods. This uniform weighting within comfort windows distributes heat evenly across each period rather than concentrating it at one end. Power bounds for each hour are derived from the steady-state heat demand at the prevailing mean outdoor temperature: comfort hours and the two pre-comfort warm-up hours carry a higher minimum power to ensure the house reaches setpoint, whilst setback hours have a lower minimum that still maintains a 17 °C floor.
 
-Once the hourly schedule is fixed it is executed minute by minute with a proportional correction term, capped at 30 % of the feedforward value, applied at each step to compensate for any discrepancy between the thermal model and the actual house response.
+## Heating Integration
 
+Once the hourly schedule is fixed it is executed minute by minute with a proportional correction term, capped at 30 % of the feedforward value, applied at each step to compensate for any discrepancy between the thermal model and the actual house response. The simulation of the thermal behaviour of the house was then carried out in heat source agnostic manner, i.e. the algorithm works out the power requirement which, given the radiator constant, determines the required flow temperature irrespective of the source. Subsequently, it is possible to calculate and compare how much electricity or gas would be needed, given the achievable COP at that flow and outside temperature and the boiler efficiency, respectively.
 
 # Simulation Results
 
