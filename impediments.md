@@ -74,11 +74,13 @@ Modern combi-boilers replaced complex multi-component heating systems with singl
 
 ### Examples of Integrated Systems
 
-Several manufacturers have developed systems approaching this integration:
+Several manufacturers have developed systems approaching this integration, albeit split between an external unit (heat pump proper) and an internal unit (with hot water tank):
 
 - **Viessmann Vitocal 151-A:** Indoor 60cm × 60cm × 190cm unit comparable to the Vitodens 222-F, nearly a drop-in replacement,
 - **Bosch Compress 6800i AW MB:** New generation heat pump with 60cm × 60cm indoor footprint, unfortunately not available in the UK,
 - **Vaillant aroTHERM Plus:** 7kW heat pump with 190L uniTOWER cylinder, 60cm × 70cm footprint.
+
+However, a new system is under development that integrates the heat pump proper, a hotwater tank and everything else into a single outdoor unit which will only have the mains water in, hot water out, radiator flow and return as well as mains power: [NUSKU](https://nusku.co.uk/news/nusku-set-to-turbocharge-switch-to-heat-pumps).
 
 ### Potential Benefits of Integration
 
